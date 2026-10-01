@@ -1,1 +1,34 @@
-placeholder
+@import "tailwindcss";
+
+/* 5IN1 dark arcade theme. Accent hue lives in one place so it stays
+   easy to change across the whole site. */
+@theme {
+  --color-ink: #0b0e14; /* page background */
+  --color-panel: #12161f; /* cards / panels */
+  --color-edge: #232a38; /* borders */
+  --color-arcade: #22d3ee; /* primary accent */
+  --color-arcade-dim: #0e7490;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-ink);
+  color: #e8ecf3;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Subtle grid backdrop for the hero. */
+.hero-grid {
+  background-image:
+    linear-gradient(to right, rgb(34 211 238 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(34 211 238 / 0.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 30%, transparent 75%);
+}
