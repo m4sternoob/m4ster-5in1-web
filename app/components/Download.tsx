@@ -14,7 +14,7 @@ export default function Download() {
         <SectionHeading
           eyebrow="Get the app"
           title="Download 5IN1 for Mac"
-          blurb="Grab the latest build from the GitHub releases page. Free forever."
+          blurb="The first macOS build is being finalized — watch the releases page, it'll be here soon."
         />
         <div className="-mt-4">
           <a
@@ -50,8 +50,8 @@ export default function Download() {
         <p className="mx-auto mt-8 max-w-2xl text-sm text-slate-400">
           The build is <strong className="text-slate-200">ad-hoc signed</strong>
           , not notarized by Apple. On first launch, macOS may warn you —
-          right-click the app and choose <em>Open</em> once, and it will launch
-          fine after that.
+          right-click the app and choose <em>Open</em> once. The first stable
+          build is still being verified — no release is published yet.
         </p>
       </div>
     </section>
