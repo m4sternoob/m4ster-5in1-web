@@ -45,8 +45,8 @@ The site is fully static-friendly; no server secrets or config involved.
 ## Notes
 
 - The `/play` demo is a web toy. The real games ship in the Mac app:
-  https://github.com/m4sternoob/guessing-game-gui/releases
+  https://github.com/m4sternoob/m4ster-5in1/releases
 - Roadmap content mirrors `ROADMAP.md` in the
-  [guessing-game-gui](https://github.com/m4sternoob/guessing-game-gui) repo.
+  [m4ster-5in1](https://github.com/m4sternoob/m4ster-5in1) repo.
   If the phases drift apart, the repo file is the source of truth.
 - Contact: masternoob102030@gmail.com
