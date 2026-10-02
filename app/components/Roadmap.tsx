@@ -1,7 +1,7 @@
 import SectionHeading from "./SectionHeading";
 
 /* Roadmap timeline. Mirrors the phase structure of ROADMAP.md in the
-   guessing-game-gui repo — checklists here describe plans, not shipped work. */
+   m4ster-5in1 repo — checklists here describe plans, not shipped work. */
 
 type Phase = {
   version: string;

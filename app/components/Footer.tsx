@@ -27,7 +27,7 @@ export default function Footer() {
             rel="noopener noreferrer"
             className="text-slate-300 transition-colors hover:text-arcade"
           >
-            GitHub — m4sternoob/guessing-game-gui
+            GitHub — m4sternoob/m4ster-5in1
           </a>
         </div>
       </div>
