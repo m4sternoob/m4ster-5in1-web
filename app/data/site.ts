@@ -2,7 +2,7 @@
    Only public, intentionally-shared values live here — no secrets. */
 
 export const GITHUB_USER = "m4sternoob";
-export const REPO = "guessing-game-gui";
+export const REPO = "m4ster-5in1";
 export const GITHUB_URL = `https://github.com/${GITHUB_USER}/${REPO}`;
 export const RELEASES_URL = `${GITHUB_URL}/releases`;
 export const CONTACT_EMAIL = "masternoob102030@gmail.com";
