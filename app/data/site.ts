@@ -5,6 +5,7 @@ export const GITHUB_USER = "m4sternoob";
 export const REPO = "m4ster-5in1";
 export const GITHUB_URL = `https://github.com/${GITHUB_USER}/${REPO}`;
 export const RELEASES_URL = `${GITHUB_URL}/releases`;
+export const ANDROID_RELEASES_URL = `https://github.com/${GITHUB_USER}/m4ster-5in1-android/releases`;
 export const CONTACT_EMAIL = "masternoob102030@gmail.com";
 
 export const SYS_REQUIREMENTS = {
