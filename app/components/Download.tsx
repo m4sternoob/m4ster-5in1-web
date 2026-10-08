@@ -39,8 +39,8 @@ export default function Download() {
           <div className="rounded-2xl border border-edge bg-panel px-6 py-8">
             <h3 className="text-lg font-bold text-white">Android</h3>
             <p className="mt-1 text-sm text-slate-400">
-              v1.3.0 is out now — two variants, with hints and no hints. Fully
-              offline, no ads, no accounts.
+              v1.4.0 is out now — five games plus Memory Match, in with-hints
+              and no-hints variants. Fully offline, no ads, no accounts.
             </p>
             <a
               href={ANDROID_RELEASES_URL}

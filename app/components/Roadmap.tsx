@@ -1,7 +1,7 @@
 import SectionHeading from "./SectionHeading";
 
 /* Roadmap timeline. Mirrors the phase structure of ROADMAP.md in the
-   m4ster-5in1 repo — checklists here describe plans, not shipped work. */
+   m4ster-5in1 repo — items marked (done) already shipped, the rest are plans. */
 
 type Phase = {
   version: string;
@@ -16,6 +16,8 @@ const PHASES: Phase[] = [
     title: "Animation & feel polish",
     status: "in progress",
     items: [
+      "Fixed a 40GB memory leak (done)",
+      "Renamed GameHub to 5IN1 across bundle, window title, and README (done)",
       "Game-switch transitions in the toolbar",
       "Win confetti across all five games",
       "Animated result banner in Tic-Tac-Toe",
@@ -26,14 +28,24 @@ const PHASES: Phase[] = [
   {
     version: "v3.2",
     title: "Gameplay depth",
-    status: "planned",
+    status: "in progress",
     items: [
       "Snake: pause menu and game-over stats (length, time survived)",
-      "Guessing: streak tracking and a daily-challenge seed mode",
+      "Guessing: streak tracking and a fixed-seed daily-challenge mode",
       "Ludo: 4-player mode (you + 3 CPU) and a faster-CPU toggle",
       "Snakes & Ladders: 2-player local pass-and-play",
       "Tic-Tac-Toe: score streaks and a polished CPU-thinks indicator",
       "Subtle sound effects, mutable, off by default",
+      "Ship the build, verify it, playtest all five games",
+    ],
+  },
+  {
+    version: "v3.2.1",
+    title: "Hint parity with Android",
+    status: "in progress",
+    items: [
+      "Guessing: cryptic hints, 3 per round (fun facts, digit wordplay, math riddles, range hints)",
+      "Ship the build, verify it, playtest all five games",
     ],
   },
   {
