@@ -39,8 +39,10 @@ export default function Download() {
           <div className="rounded-2xl border border-edge bg-panel px-6 py-8">
             <h3 className="text-lg font-bold text-white">Android</h3>
             <p className="mt-1 text-sm text-slate-400">
-              v1.3.0 is out now — two variants, with hints and no hints. Fully
-              offline, no ads, no accounts.
+              v1.4.0 is out now — adds Memory Match, a misère Tic-Tac-Toe
+              mode, and extra rolls on sixes in Snakes &amp; Ladders. Two
+              variants, with hints and no hints. Fully offline, no ads, no
+              accounts.
             </p>
             <a
               href={ANDROID_RELEASES_URL}
@@ -74,8 +76,9 @@ export default function Download() {
         </dl>
 
         <p className="mx-auto mt-8 max-w-2xl text-sm text-slate-400">
-          The build is <strong className="text-slate-200">ad-hoc signed</strong>
-          , not notarized by Apple. On first launch, macOS may warn you —
+          The build is{" "}
+          <strong className="text-slate-200">ad-hoc signed</strong>, not
+          notarized by Apple. On first launch, macOS may warn you —
           right-click the app and choose <em>Open</em> once. No public Mac
           release is published yet — v3.2.1 is still in playtesting.
         </p>

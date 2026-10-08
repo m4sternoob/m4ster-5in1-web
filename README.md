@@ -1,4 +1,4 @@
-# 5in1-web
+# m4ster-5in1-web
 
 The marketing and download site for **5IN1** — m4sternoob's native macOS game
 app (Guessing Game, Snake, Snakes & Ladders, Ludo vs CPU, Tic-Tac-Toe vs CPU).
@@ -12,7 +12,8 @@ Built with Next.js (App Router) + TypeScript + Tailwind CSS.
   actually ships in the Mac app)
 - **Download** — links to the GitHub releases page, with honest system
   requirements (macOS 14+, Apple Silicon) and a note about the ad-hoc signature
-- **Roadmap** — timeline mirroring the phases in the app's `ROADMAP.md`
+- **Roadmap** — timeline of where the Mac app is headed (current phase always
+  matches the release status in the Download section)
 - **Tech** — SwiftUI, SpriteKit, zero dependencies, native macOS, offline
 - **/play** — a playable Tic-Tac-Toe demo (you vs an unbeatable minimax CPU)
 
@@ -21,7 +22,7 @@ Built with Next.js (App Router) + TypeScript + Tailwind CSS.
 Requires Node.js 18.18+ (20+ recommended).
 
 ```bash
-cd 5in1-web
+cd m4ster-5in1-web
 npm install
 npm run dev      # dev server at http://localhost:3000
 ```
@@ -46,7 +47,4 @@ The site is fully static-friendly; no server secrets or config involved.
 
 - The `/play` demo is a web toy. The real games ship in the Mac app:
   https://github.com/m4sternoob/m4ster-5in1/releases
-- Roadmap content mirrors `ROADMAP.md` in the
-  [m4ster-5in1](https://github.com/m4sternoob/m4ster-5in1) repo.
-  If the phases drift apart, the repo file is the source of truth.
 - Contact: masternoob102030@gmail.com

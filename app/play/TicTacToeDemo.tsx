@@ -85,12 +85,11 @@ export default function TicTacToeDemo() {
   // The CPU answers each player move after a short beat so the game
   // feels like a turn, not an instant calculation.
   useEffect(() => {
-    if (result !== null || thinking) return;
+    if (result !== null || !thinking) return;
     const xCount = board.filter((c) => c === "X").length;
     const oCount = board.filter((c) => c === "O").length;
     if (xCount <= oCount) return; // still the player's turn
 
-    setThinking(true);
     const timer = setTimeout(() => {
       setBoard((prev) => {
         const next = [...prev];
@@ -116,11 +115,12 @@ export default function TicTacToeDemo() {
 
   function play(index: number) {
     if (result !== null || thinking || board[index] !== null) return;
-    setBoard((prev) => {
-      const next = [...prev];
-      next[index] = "X";
-      return next;
-    });
+    const next = [...board];
+    next[index] = "X";
+    setBoard(next);
+    // If the game isn't over, the CPU gets the next move — flag it here
+    // (in the event handler) instead of inside the effect below.
+    if (outcomeOf(next) === null) setThinking(true);
   }
 
   function reset() {

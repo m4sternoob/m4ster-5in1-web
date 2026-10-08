@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { useState } from "react";
 
-/* Sticky top navigation. Collapses to a compact menu on small screens. */
+/* Sticky top navigation. Collapses to a compact menu on small screens.
+   Section links are root-relative ("/#games") so they work from every
+   page — on /play a bare "#games" anchor would point at nothing. */
 
 const LINKS = [
-  { href: "#games", label: "Games" },
-  { href: "#download", label: "Download" },
-  { href: "#roadmap", label: "Roadmap" },
-  { href: "#tech", label: "Tech" },
+  { href: "/#games", label: "Games" },
+  { href: "/#download", label: "Download" },
+  { href: "/#roadmap", label: "Roadmap" },
+  { href: "/#tech", label: "Tech" },
   { href: "/play", label: "Play demo" },
 ];
 

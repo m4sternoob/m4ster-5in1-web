@@ -1,7 +1,8 @@
 import SectionHeading from "./SectionHeading";
 
-/* Roadmap timeline. Mirrors the phase structure of ROADMAP.md in the
-   m4ster-5in1 repo — checklists here describe plans, not shipped work. */
+/* Roadmap timeline. Checklists here describe plans, not shipped work —
+   and the current phase matches the release status in the Download
+   section above so the two never contradict each other. */
 
 type Phase = {
   version: string;
@@ -12,19 +13,17 @@ type Phase = {
 
 const PHASES: Phase[] = [
   {
-    version: "v3.1.1",
-    title: "Animation & feel polish",
+    version: "v3.2.1",
+    title: "Release hardening",
     status: "in progress",
     items: [
-      "Game-switch transitions in the toolbar",
-      "Win confetti across all five games",
-      "Animated result banner in Tic-Tac-Toe",
-      "Hardened confetti view — no runaway timers",
-      "Ship the build, verify it, playtest all five games",
+      "Build is done — v3.2.1 is in playtesting now",
+      "Public release lands once playtesting passes",
+      "Ad-hoc signed: first-launch instructions live in the download section",
     ],
   },
   {
-    version: "v3.2",
+    version: "v3.3",
     title: "Gameplay depth",
     status: "planned",
     items: [
@@ -37,7 +36,7 @@ const PHASES: Phase[] = [
     ],
   },
   {
-    version: "v3.3",
+    version: "v3.4",
     title: "Social & sharing",
     status: "planned",
     items: [
@@ -51,7 +50,7 @@ const PHASES: Phase[] = [
     status: "planned",
     items: [
       "iOS port — the iOS target already exists and needs wiring",
-      "Android scoping — portrait, basic; Mac comes first",
+      "Android is already live (v1.4.0) — grab it in the Download section",
     ],
   },
 ];
@@ -70,7 +69,7 @@ export default function Roadmap() {
         <SectionHeading
           eyebrow="What's next"
           title="The roadmap"
-          blurb="The plan lives in the repo's ROADMAP.md and ships in public. Here's where it's headed."
+          blurb="Where the Mac app is headed. The current phase always matches the release status in the Download section."
         />
 
         <ol className="relative space-y-10 border-l border-edge pl-6 sm:pl-8">
