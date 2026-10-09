@@ -14,7 +14,9 @@ Built with Next.js (App Router) + TypeScript + Tailwind CSS.
   requirements (macOS 14+, Apple Silicon) and a note about the ad-hoc signature
 - **Roadmap** — timeline mirroring the phases in the app's `ROADMAP.md`
 - **Tech** — SwiftUI, SpriteKit, zero dependencies, native macOS, offline
-- **/play** — a playable Tic-Tac-Toe demo (you vs an unbeatable minimax CPU)
+- **/play** — playable web demos: the Guessing Game (real Easy/Medium/Hard/
+  Custom rules from the Mac app, hot-or-cold meter, best score per difficulty
+  saved in your browser) and Tic-Tac-Toe (you vs an unbeatable minimax CPU)
 
 ## Run it locally
 
@@ -44,7 +46,8 @@ The site is fully static-friendly; no server secrets or config involved.
 
 ## Notes
 
-- The `/play` demo is a web toy. The real games ship in the Mac app:
+- The `/play` demos are web toys — small tastes of two of the five games.
+  The real games ship in the Mac app:
   https://github.com/m4sternoob/m4ster-5in1/releases
 - Roadmap content mirrors `ROADMAP.md` in the
   [m4ster-5in1](https://github.com/m4sternoob/m4ster-5in1) repo.
