@@ -10,7 +10,7 @@ const LINKS = [
   { href: "#download", label: "Download" },
   { href: "#roadmap", label: "Roadmap" },
   { href: "#tech", label: "Tech" },
-  { href: "/play", label: "Play demo" },
+  { href: "/play", label: "Play demos" },
 ];
 
 export default function Navbar() {
