@@ -49,4 +49,4 @@ The site is fully static-friendly; no server secrets or config involved.
 - Roadmap content mirrors `ROADMAP.md` in the
   [m4ster-5in1](https://github.com/m4sternoob/m4ster-5in1) repo.
   If the phases drift apart, the repo file is the source of truth.
-- Contact: masternoob102030@gmail.com
+- Contact: xyaz@gmail.com
