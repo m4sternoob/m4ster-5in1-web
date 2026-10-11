@@ -1,22 +1,23 @@
 import type { Metadata } from "next";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import TicTacToeDemo from "./TicTacToeDemo";
+import PlayTabs from "./PlayTabs";
 
 export const metadata: Metadata = {
-  title: "Play the Tic-Tac-Toe demo — 5IN1",
+  title: "Play the demos — 5IN1",
   description:
-    "Try 5IN1's Tic-Tac-Toe against an unbeatable minimax CPU, right in your browser.",
+    "Try 5IN1's Guessing Game and Tic-Tac-Toe against the minimax CPU, right in your browser.",
 };
 
-/* /play: the playable Tic-Tac-Toe demo page. */
+/* /play: the playable web demos — a small taste of two 5IN1 games.
+   The full games (and the rest of the lineup) ship in the Mac app. */
 
 export default function PlayPage() {
   return (
     <div className="flex min-h-full flex-col">
       <Navbar />
       <main className="flex flex-1 items-center justify-center px-4 pt-28 pb-16 sm:px-6">
-        <TicTacToeDemo />
+        <PlayTabs />
       </main>
       <Footer />
     </div>
