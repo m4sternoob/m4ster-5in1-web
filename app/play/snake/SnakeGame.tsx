@@ -181,12 +181,6 @@ export default function SnakeGame() {
       if (prev.dx === -d.dx && prev.dy === -d.dy) return prev;
       return d;
     });
-    setRunning((r) => {
-      if (!r && stateRef.current.alive) {
-        // First steer starts a fresh run after game over screen shows.
-      }
-      return r;
-    });
   }, []);
 
   useEffect(() => {
