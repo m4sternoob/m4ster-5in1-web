@@ -23,6 +23,7 @@ export default function Connect4Game() {
   const [board, setBoard] = useState<Mark[]>(newBoard);
   const [hard, setHard] = useState(true);
   const [thinking, setThinking] = useState(false);
+  const thinkingRef = useRef(false);
   const [tally, setTally] = useState({ you: 0, cpu: 0, draws: 0 });
 
   const line = winningLineOf(board);
@@ -31,11 +32,12 @@ export default function Connect4Game() {
 
   // CPU answers after a short beat.
   useEffect(() => {
-    if (done || thinking) return;
+    if (done || thinkingRef.current) return;
     const xCount = board.filter((m) => m === PLAYER).length;
     const oCount = board.filter((m) => m === CPU).length;
     if (xCount <= oCount) return; // player's turn
 
+    thinkingRef.current = true;
     setThinking(true);
     const timer = setTimeout(() => {
       setBoard((prev) => {
@@ -43,10 +45,11 @@ export default function Connect4Game() {
         if (col < 0) return prev;
         return dropDisc(prev, col, CPU) ?? prev;
       });
+      thinkingRef.current = false;
       setThinking(false);
     }, 500);
     return () => clearTimeout(timer);
-  }, [board, done, thinking, hard]);
+  }, [board, done, hard]);
 
   // Guards the score so a finished game is tallied exactly once.
   const countedRef = useRef(false);
@@ -67,6 +70,7 @@ export default function Connect4Game() {
 
   function reset() {
     countedRef.current = false;
+    thinkingRef.current = false;
     setBoard(newBoard());
     setThinking(false);
   }
