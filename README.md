@@ -1,33 +1,28 @@
-# 6IN1
+# 5in1-web
 
-Six games, one codebase, every platform. This is the main 6IN1 repo —
-the web app here is the single source of truth for UI and game logic,
-and every native build ships from it.
+The marketing and download site for **5IN1** — m4sternoob's native macOS game
+app (Snake, Connect 4, Memory Match, Tic-Tac-Toe, Number Guessing).
 
-## One codebase, all platforms
+Built with Next.js (App Router) + TypeScript + Tailwind CSS.
 
-| Platform | How | Output |
-|---|---|---|
-| Web | Next.js static export, deployed on Vercel | https://m4ster-5in1.vercel.app |
-| Windows | Tauri desktop shell around the same build | `.exe` installer |
-| macOS | Tauri desktop shell around the same build | `.dmg` |
-| Android | Capacitor wraps the same build in a native WebView | `.apk` |
-| iOS | Capacitor wraps the same build in a native WebView | `.ipa` |
+## What's on the site
 
-Change one thing, push once, and it lands everywhere — same UI,
-same animations, same effects, one-to-one across all platforms.
-`DESIGN_SYSTEM.md` is the visual contract every shell must honor.
-
-## The games
-
-Guessing, Ludo, Tic-Tac-Toe, Memory Match, 2048, Minesweeper —
-all playable in the browser at `/play`, all offline-first.
+- **Hero** — "5IN1 — five games, one native macOS app"
+- **Games** — showcase cards for all five games (features describe only what
+  actually ships in the Mac app)
+- **Download** — links to the GitHub releases page, with honest system
+  requirements (macOS 14+, Apple Silicon) and a note about the ad-hoc signature
+- **Roadmap** — timeline mirroring the phases in the app's `ROADMAP.md`
+- **Tech** — SwiftUI, SpriteKit, zero dependencies, native macOS, offline
+- **/play** — playable web demos: Snake, Connect 4, Memory Match, Tic-Tac-Toe,
+  and Number Guessing
 
 ## Run it locally
 
-Requires Node.js 20+.
+Requires Node.js 18.18+ (20+ recommended).
 
 ```bash
+cd 5in1-web
 npm install
 npm run dev      # dev server at http://localhost:3000
 ```
@@ -35,32 +30,25 @@ npm run dev      # dev server at http://localhost:3000
 ## Production build
 
 ```bash
-npm run build    # static export to out/ — must exit 0
+npm run build    # must exit 0 — this is the only "it works" claim we make
+npm run start    # serve the production build locally
 ```
-
-## Mobile shells (Capacitor)
-
-The native shells are generated from `capacitor.config.ts` — they are not
-committed (see `.gitignore`). To work on them locally:
-
-```bash
-npx cap add android      # scaffold the Android shell (once)
-npx cap sync             # copy the web build into android/ and ios/
-npx cap open android     # open in Android Studio
-npx cap open ios         # open in Xcode (Mac only)
-```
-
-Android APKs build automatically on `v*` tags via
-`.github/workflows/capacitor-android.yml`. iOS builds need a Mac runner.
-
-## Desktop shells (Tauri)
-
-The `src-tauri/` project wraps the same `out/` build. Windows `.exe`
-and macOS `.dmg` build automatically on `v*` tags via
-`.github/workflows/tauri-build.yml`.
 
 ## Deploy on Vercel
 
-Push to `main` — auto-deploys. No environment variables needed.
+1. Push this folder to a GitHub repo (it is a standalone project root).
+2. In Vercel: **Add New → Project → Import** the repo.
+3. Framework is auto-detected as Next.js — no settings to change.
+4. No environment variables are needed. Deploy.
 
-Contact: xyaz@gmail.com
+The site is fully static-friendly; no server secrets or config involved.
+
+## Notes
+
+- The `/play` demos are web toys — small tastes of the five games.
+  The real games ship in the Mac app:
+  https://github.com/m4sternoob/m4ster-5in1/releases
+- Roadmap content mirrors `ROADMAP.md` in the
+  [m4ster-5in1](https://github.com/m4sternoob/m4ster-5in1) repo.
+  If the phases drift apart, the repo file is the source of truth.
+- Contact: xyaz@gmail.com

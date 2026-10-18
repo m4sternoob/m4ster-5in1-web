@@ -25,7 +25,7 @@ export default function Hero() {
         </Reveal>
         <Reveal delay={320}>
           <p className="mx-auto mt-3 max-w-xl text-sm text-slate-400 sm:text-base">
-            Guessing, Snake, Snakes &amp; Ladders, Ludo, and Tic-Tac-Toe —
+            Snake, Connect 4, Memory Match, Tic-Tac-Toe, and Number Guessing —
             built in SwiftUI + SpriteKit, zero dependencies, offline by design.
           </p>
         </Reveal>

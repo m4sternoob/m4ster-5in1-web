@@ -8,18 +8,12 @@ import Reveal from "../components/Reveal";
 export const metadata: Metadata = {
   title: "Play the games — 5IN1",
   description:
-    "Play all 5IN1 games right in your browser — 2048, Snake, Connect 4, Memory Match, Tic-Tac-Toe, Guessing Game, Snakes & Ladders, and Ludo.",
+    "Play all 5IN1 games right in your browser — Snake, Connect 4, Memory Match, Tic-Tac-Toe, and Number Guessing.",
 };
 
 /* /play hub: every 5IN1 game playable in the browser. */
 
 const GAMES = [
-  {
-    href: "/play/2048",
-    icon: "🔢",
-    title: "2048",
-    blurb: "Merge tiles to 2048.",
-  },
   {
     href: "/play/snake",
     icon: "🐍",
@@ -50,18 +44,6 @@ const GAMES = [
     title: "Number Guessing",
     blurb: "Hot-or-cold number hunt.",
   },
-  {
-    href: "/play/ladders",
-    icon: "🪜",
-    title: "Snakes & Ladders",
-    blurb: "Race to 100 vs the CPU.",
-  },
-  {
-    href: "/play/ludo",
-    icon: "🎲",
-    title: "Ludo",
-    blurb: "Full board, bring all four home.",
-  },
 ];
 
 export default function PlayPage() {
@@ -83,12 +65,12 @@ export default function PlayPage() {
           </Reveal>
           <Reveal delay={180}>
             <p className="mx-auto mt-3 max-w-xl text-sm text-slate-400">
-              All eight games from the 5IN1 app, running right here — no
+              All five games from the 5IN1 app, running right here — no
               download needed.
             </p>
           </Reveal>
 
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {GAMES.map((g, i) => (
               <Reveal key={g.href} delay={220 + i * 70}>
                 <Link

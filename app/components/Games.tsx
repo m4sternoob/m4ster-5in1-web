@@ -13,17 +13,6 @@ type Game = {
 
 const GAMES: Game[] = [
   {
-    name: "Guessing Game",
-    tagline: "Pick the number before your attempts run out.",
-    features: [
-      "Easy / Medium / Hard / Custom difficulty",
-      "Attempt limits that raise the stakes",
-      "Hot-or-cold proximity meter",
-      "Win-rate stat so you can track your form",
-    ],
-    icon: "🎯",
-  },
-  {
     name: "Snake",
     tagline: "The classic, with a need for speed.",
     features: [
@@ -35,24 +24,26 @@ const GAMES: Game[] = [
     icon: "🐍",
   },
   {
-    name: "Snakes & Ladders",
-    tagline: "Roll, climb, and try not to slide.",
+    name: "Connect 4 vs CPU",
+    tagline: "Drop discs, line up four.",
     features: [
-      "Classic 100-cell board",
-      "Animated dice rolls",
-      "Snakes slide you down, ladders lift you up",
+      "Easy and Hard CPU difficulty",
+      "Gravity disc drops with bounce",
+      "Win celebration with confetti",
+      "Glossy 3D discs",
     ],
-    icon: "🎲",
+    icon: "🔴",
   },
   {
-    name: "Ludo vs CPU",
-    tagline: "Race your tokens home against the machine.",
+    name: "Memory Match",
+    tagline: "Flip pairs, clear the board.",
     features: [
-      "Classic 52-cell path",
-      "You vs a CPU opponent",
-      "Tap-to-move tokens",
+      "Classic card-flip gameplay",
+      "Move counter and timer",
+      "Mismatch shake animation",
+      "Win celebration",
     ],
-    icon: "🏁",
+    icon: "🃏",
   },
   {
     name: "Tic-Tac-Toe vs CPU",
@@ -63,6 +54,17 @@ const GAMES: Game[] = [
       "Win confetti when you pull off the impossible",
     ],
     icon: "⭕",
+  },
+  {
+    name: "Number Guessing",
+    tagline: "Pick the number before your attempts run out.",
+    features: [
+      "Easy / Medium / Hard / Custom difficulty",
+      "Attempt limits that raise the stakes",
+      "Hot-or-cold proximity meter",
+      "Win-rate stat so you can track your form",
+    ],
+    icon: "🎯",
   },
 ];
 
