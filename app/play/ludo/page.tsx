@@ -16,7 +16,7 @@ export default function Page() {
       <main className="flex flex-1 items-center justify-center px-4 pt-28 pb-16 sm:px-6">
         <GameShell
           title="Ludo"
-          tagline="Roll a 6 to leave base, capture rivals, bring both tokens home — same as the 5IN1 app."
+          tagline="Roll a 6 to leave base, capture rivals, bring all four tokens home — the full classic board."
         >
           <LudoGame />
         </GameShell>
