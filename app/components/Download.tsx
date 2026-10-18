@@ -1,8 +1,14 @@
 import SectionHeading from "./SectionHeading";
-import { RELEASES_URL, ANDROID_RELEASES_URL, SYS_REQUIREMENTS } from "../data/site";
+import {
+  RELEASES_URL,
+  ANDROID_RELEASES_URL,
+  WINDOWS_RELEASES_URL,
+  SYS_REQUIREMENTS,
+} from "../data/site";
 
-/* Download section: Mac + Android releases, honest system requirements,
-   and a note about the ad-hoc signature so users know what to expect. */
+/* Download section: Mac + Android + Windows releases, honest system
+   requirements, and a note about the ad-hoc signature so users know what
+   to expect. */
 
 export default function Download() {
   return (
@@ -13,11 +19,11 @@ export default function Download() {
       <div className="mx-auto max-w-4xl text-center">
         <SectionHeading
           eyebrow="Get the app"
-          title="Download 5IN1"
-          blurb="Pick your platform below. Both builds are free, offline, and ad-free."
+          title="Download 6IN1"
+          blurb="Pick your platform below. All builds are free, offline, and ad-free."
         />
 
-        <div className="mx-auto -mt-4 grid max-w-3xl gap-4 sm:grid-cols-2">
+        <div className="mx-auto -mt-4 grid max-w-5xl gap-4 sm:grid-cols-3">
           {/* macOS */}
           <div className="rounded-2xl border border-edge bg-panel px-6 py-8">
             <h3 className="text-lg font-bold text-white">macOS</h3>
@@ -49,6 +55,22 @@ export default function Download() {
               className="btn-alive mt-5 inline-block rounded-xl bg-arcade px-8 py-3 text-base font-bold text-ink shadow-lg shadow-cyan-500/20 hover:bg-cyan-300"
             >
               Android releases
+            </a>
+          </div>
+
+          {/* Windows */}
+          <div className="rounded-2xl border border-edge bg-panel px-6 py-8">
+            <h3 className="text-lg font-bold text-white">Windows</h3>
+            <p className="mt-1 text-sm text-slate-400">
+              6IN1 installer (.exe) — free, offline, no accounts.
+            </p>
+            <a
+              href={WINDOWS_RELEASES_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-alive mt-5 inline-block rounded-xl bg-arcade px-8 py-3 text-base font-bold text-ink shadow-lg shadow-cyan-500/20 hover:bg-cyan-300"
+            >
+              Windows releases
             </a>
           </div>
         </div>
