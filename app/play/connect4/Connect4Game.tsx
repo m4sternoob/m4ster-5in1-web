@@ -17,8 +17,8 @@ import {
 
 /* Playable Connect 4: you (red) vs the CPU (yellow). Tap a column to
    drop. Hard CPU takes wins and blocks yours; Easy plays randomly.
-   Juiced: gravity disc drops, ghost column previews, win line draw,
-   confetti, pulsing turn indicator. */
+   Juiced: gravity disc drops, ghost column previews, canvas confetti
+   explosion, sequential win-disc pops, glowing win line, spring banner. */
 
 const newBoard = (): Mark[] => Array<Mark>(COLS * ROWS).fill(EMPTY);
 
@@ -26,7 +26,68 @@ type DropInfo = { index: number; row: number; nonce: number };
 
 const cellRC = (i: number) => ({ row: Math.floor(i / COLS), col: i % COLS });
 
-const CONFETTI_COLORS = ["#22d3ee", "#818cf8", "#facc15", "#ef4444", "#a5f3fc"];
+const CONFETTI_COLORS = ["#22d3ee", "#818cf8", "#facc15", "#ef4444", "#a5f3fc", "#ffffff"];
+
+/* Canvas confetti burst. Fires from (x, y) in canvas CSS pixels. */
+function burst(
+  ctx: CanvasRenderingContext2D,
+  W: number,
+  H: number,
+  x: number,
+  y: number,
+  count: number,
+  power: number,
+) {
+  const parts: {
+    x: number; y: number; vx: number; vy: number;
+    w: number; h: number; rot: number; vr: number;
+    color: string; life: number; maxLife: number;
+  }[] = [];
+  for (let i = 0; i < count; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const sp = (0.35 + Math.random() * 0.65) * power;
+    parts.push({
+      x, y,
+      vx: Math.cos(a) * sp,
+      vy: Math.sin(a) * sp - power * 0.45,
+      w: 5 + Math.random() * 8,
+      h: 3 + Math.random() * 5,
+      rot: Math.random() * Math.PI * 2,
+      vr: (Math.random() - 0.5) * 0.35,
+      color: CONFETTI_COLORS[(Math.random() * CONFETTI_COLORS.length) | 0],
+      life: 0,
+      maxLife: 130 + Math.random() * 90,
+    });
+  }
+  let raf = 0;
+  const tick = () => {
+    ctx.clearRect(0, 0, W, H);
+    let alive = false;
+    for (const p of parts) {
+      p.life++;
+      if (p.life > p.maxLife) continue;
+      alive = true;
+      p.vy += 0.22;
+      p.vx *= 0.985;
+      p.vy *= 0.99;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vr;
+      const fade = 1 - p.life / p.maxLife;
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, fade * 1.6);
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    }
+    if (alive) raf = requestAnimationFrame(tick);
+    else ctx.clearRect(0, 0, W, H);
+  };
+  raf = requestAnimationFrame(tick);
+  return () => cancelAnimationFrame(raf);
+}
 
 export default function Connect4Game() {
   const [board, setBoard] = useState<Mark[]>(newBoard);
@@ -42,6 +103,10 @@ export default function Connect4Game() {
   const nonceRef = useRef(0);
   const boardRef = useRef(board);
   boardRef.current = board;
+
+  const boardWrapRef = useRef<HTMLDivElement>(null);
+  const fxRef = useRef<HTMLCanvasElement>(null);
+  const discRefs = useRef(new Map<number, HTMLSpanElement>());
 
   const line = winningLineOf(board);
   const winner = line ? board[line[0]] : null;
@@ -87,6 +152,59 @@ export default function Connect4Game() {
     }));
   }, [done, winner]);
 
+  // WIN CELEBRATION — fires once per win. Canvas confetti explosion from
+  // the winning line, screen flash, then follow-up waves.
+  useEffect(() => {
+    if (!winner || !line) return;
+    const canvas = fxRef.current;
+    const wrap = boardWrapRef.current;
+    if (!canvas || !wrap) return;
+
+    const rect = wrap.getBoundingClientRect();
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = Math.max(1, rect.width * dpr);
+    canvas.height = Math.max(1, rect.height * dpr);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const W = rect.width;
+    const H = rect.height;
+
+    // Winning line center — measured from the real disc elements.
+    const centers = line
+      .map((i) => discRefs.current.get(i))
+      .filter((el): el is HTMLSpanElement => !!el)
+      .map((el) => {
+        const r = el.getBoundingClientRect();
+        return { x: r.left - rect.left + r.width / 2, y: r.top - rect.top + r.height / 2 };
+      });
+    const cx = centers.length
+      ? centers.reduce((s, c) => s + c.x, 0) / centers.length
+      : W / 2;
+    const cy = centers.length
+      ? centers.reduce((s, c) => s + c.y, 0) / centers.length
+      : H / 2;
+
+    const stops: (() => void)[] = [];
+    // Wave 1: big burst from the winning line.
+    stops.push(burst(ctx, W, H, cx, cy, 130, 11));
+    // Wave 2: side cannons after a beat.
+    const wave2 = setTimeout(() => {
+      stops.push(burst(ctx, W, H, W * 0.12, H * 0.25, 60, 8));
+      stops.push(burst(ctx, W, H, W * 0.88, H * 0.25, 60, 8));
+    }, 450);
+    // Wave 3: top rain.
+    const wave3 = setTimeout(() => {
+      stops.push(burst(ctx, W, H, W * 0.5, -10, 70, 7));
+    }, 950);
+    return () => {
+      clearTimeout(wave2);
+      clearTimeout(wave3);
+      stops.forEach((s) => s());
+      ctx.clearRect(0, 0, W, H);
+    };
+  }, [winner, line, gameId]);
+
   function play(col: number) {
     if (done || thinking) return;
     const b = boardRef.current;
@@ -102,6 +220,7 @@ export default function Connect4Game() {
   function reset() {
     countedRef.current = false;
     thinkingRef.current = false;
+    discRefs.current.clear();
     setBoard(newBoard());
     setThinking(false);
     setLastDrop(null);
@@ -109,34 +228,10 @@ export default function Connect4Game() {
     setGameId((g) => g + 1);
   }
 
-  // Win-line endpoints in a 700x600 viewBox (100 units per cell).
-  const winLine = useMemo(() => {
-    if (!line) return null;
-    const a = cellRC(line[0]);
-    const b = cellRC(line[3]);
-    return {
-      x1: (a.col + 0.5) * 100,
-      y1: (a.row + 0.5) * 100,
-      x2: (b.col + 0.5) * 100,
-      y2: (b.row + 0.5) * 100,
-    };
-  }, [line]);
-
-  const confetti = useMemo(() => {
-    if (!winner) return [];
-    return Array.from({ length: 30 }, (_, i) => ({
-      id: `${gameId}-${i}`,
-      left: Math.random() * 100,
-      delay: Math.random() * 0.6,
-      color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-      size: 6 + Math.random() * 7,
-    }));
-  }, [winner, gameId]);
-
   const status = winner === PLAYER
     ? "You win — four in a row!"
     : winner === CPU
-      ? "CPU wins. Try Hard mode for a real fight."
+      ? "CPU wins this one."
       : done
         ? "Board full — draw."
         : thinking
@@ -186,19 +281,20 @@ export default function Connect4Game() {
                 {showGhost ? (
                   <span className="c4-disc c4-disc-red c4-ghost" aria-hidden="true" />
                 ) : (
-                  <span aria-hidden="true">▼</span>
+                  <span aria-hidden="true">&#9660;</span>
                 )}
               </button>
             );
           })}
         </div>
 
-        <div className="relative">
+        <div ref={boardWrapRef} className="relative">
           <div className="grid grid-cols-7 gap-1.5">
             {board.map((m, i) => {
               const { row, col } = cellRC(i);
               const isNew = lastDrop?.index === i;
               const isWin = winSet.has(i);
+              const winOrder = line ? line.indexOf(i) : -1;
               const colHl = hoverCol === col && !done && !thinking;
               return (
                 <div
@@ -209,11 +305,20 @@ export default function Connect4Game() {
                 >
                   {m !== EMPTY && (
                     <span
+                      ref={(el) => {
+                        if (el) discRefs.current.set(i, el);
+                        else discRefs.current.delete(i);
+                      }}
                       key={isNew ? `drop-${lastDrop!.nonce}` : "set"}
                       className={`c4-disc ${m === PLAYER ? "c4-disc-red" : "c4-disc-yellow"} ${
                         isNew ? "disc-drop" : ""
-                      } ${isWin ? "win-pulse" : ""}`}
-                      style={isNew ? ({ "--fall": row } as CSSProperties) : undefined}
+                      } ${isWin ? "win-pop" : ""}`}
+                      style={
+                        {
+                          ...(isNew ? { "--fall": row } : {}),
+                          ...(isWin && winOrder >= 0 ? { "--win-delay": `${0.15 + winOrder * 0.14}s` } : {}),
+                        } as CSSProperties
+                      }
                     />
                   )}
                 </div>
@@ -221,50 +326,39 @@ export default function Connect4Game() {
             })}
           </div>
 
-          {/* Win line draws through the four */}
-          {winLine && (
-            <svg
-              viewBox="0 0 700 600"
-              preserveAspectRatio="none"
-              className="pointer-events-none absolute inset-0 h-full w-full"
-              aria-hidden="true"
-            >
-              <line
-                x1={winLine.x1}
-                y1={winLine.y1}
-                x2={winLine.x2}
-                y2={winLine.y2}
-                stroke={winner === PLAYER ? "#22d3ee" : "#facc15"}
-                strokeWidth={14}
-                strokeLinecap="round"
-                opacity={0.9}
-                className="c4-win-line"
-              />
-            </svg>
-          )}
+          {/* Celebration canvas: confetti bursts render here */}
+          <canvas
+            ref={fxRef}
+            className="pointer-events-none absolute inset-0 h-full w-full"
+            aria-hidden="true"
+          />
 
-          {/* Confetti rain on win */}
-          {winner && (
-            <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-              {confetti.map((p) => (
-                <span
-                  key={p.id}
-                  className="c4-confetti"
-                  style={
-                    {
-                      left: `${p.left}%`,
-                      animationDelay: `${p.delay}s`,
-                      background: p.color,
-                      width: p.size,
-                      height: p.size * 0.6,
-                    } as CSSProperties
-                  }
-                />
-              ))}
-            </div>
+          {/* Glowing win line — through measured disc centers */}
+          {winner && line && (
+            <WinLine line={line} boardWrapRef={boardWrapRef} discRefs={discRefs} winner={winner} />
           )}
         </div>
       </div>
+
+      {/* Win banner — big, springy, glowing */}
+      {winner && (
+        <div key={`banner-${gameId}`} className="c4-banner mt-5 text-center" aria-live="polite">
+          <div className={`c4-banner-text ${winner === PLAYER ? "c4-banner-you" : "c4-banner-cpu"}`}>
+            {winner === PLAYER ? "YOU WIN!" : "CPU WINS"}
+          </div>
+          <div className="mt-1 text-sm font-medium text-slate-400">
+            {winner === PLAYER ? "Four in a row — unstoppable." : "The machine takes this one."}
+          </div>
+        </div>
+      )}
+
+      {/* Draw treatment */}
+      {done && !winner && (
+        <div key={`draw-${gameId}`} className="c4-banner mt-5 text-center" aria-live="polite">
+          <div className="c4-banner-text c4-banner-draw">DRAW</div>
+          <div className="mt-1 text-sm font-medium text-slate-400">Board full — nobody blinked.</div>
+        </div>
+      )}
 
       {/* Turn indicator + status */}
       <div className="mt-4 flex min-h-6 items-center justify-center gap-2">
@@ -274,12 +368,11 @@ export default function Connect4Game() {
             aria-hidden="true"
           />
         )}
-        <p
-          key={done ? `end-${gameId}` : "play"}
-          className={`text-sm font-semibold ${done ? "pop-in text-base text-white" : "text-slate-200"}`}
-        >
-          {status}
-        </p>
+        {!winner && (
+          <p className="text-sm font-semibold text-slate-200">
+            {status}
+          </p>
+        )}
       </div>
 
       <div className="mt-2 flex items-center justify-center gap-6 text-sm text-slate-400">
@@ -302,5 +395,81 @@ export default function Connect4Game() {
         New game
       </button>
     </div>
+  );
+}
+
+/* Win line through the ACTUAL measured disc centers — percentage-based,
+   so grid gaps can't throw it off. */
+function WinLine({
+  line,
+  boardWrapRef,
+  discRefs,
+  winner,
+}: {
+  line: number[];
+  boardWrapRef: React.RefObject<HTMLDivElement | null>;
+  discRefs: React.RefObject<Map<number, HTMLSpanElement>>;
+  winner: Mark;
+}) {
+  const [geom, setGeom] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
+
+  useEffect(() => {
+    const wrap = boardWrapRef.current;
+    if (!wrap) return;
+    const measure = () => {
+      const wr = wrap.getBoundingClientRect();
+      if (wr.width === 0) return;
+      const pts = line
+        .map((i) => discRefs.current.get(i))
+        .filter((el): el is HTMLSpanElement => !!el)
+        .map((el) => {
+          const r = el.getBoundingClientRect();
+          return {
+            x: ((r.left - wr.left + r.width / 2) / wr.width) * 100,
+            y: ((r.top - wr.top + r.height / 2) / wr.height) * 100,
+          };
+        });
+      if (pts.length === 4) {
+        const dx = pts[3].x - pts[0].x;
+        const dy = pts[3].y - pts[0].y;
+        const len = Math.hypot(dx, dy) || 1;
+        const ex = (dx / len) * 3.5;
+        const ey = (dy / len) * 3.5;
+        setGeom({
+          x1: pts[0].x - ex,
+          y1: pts[0].y - ey,
+          x2: pts[3].x + ex,
+          y2: pts[3].y + ey,
+        });
+      }
+    };
+    measure();
+    const t = setTimeout(measure, 60);
+    return () => clearTimeout(t);
+  }, [line, boardWrapRef, discRefs]);
+
+  if (!geom) return null;
+  const glow = winner === PLAYER ? "#22d3ee" : "#facc15";
+  return (
+    <svg
+      viewBox="0 0 100 100"
+      preserveAspectRatio="none"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden="true"
+    >
+      <line
+        x1={geom.x1}
+        y1={geom.y1}
+        x2={geom.x2}
+        y2={geom.y2}
+        stroke={glow}
+        strokeWidth={3.2}
+        strokeLinecap="round"
+        opacity={0.95}
+        className="c4-win-line"
+        vectorEffect="non-scaling-stroke"
+        style={{ filter: `drop-shadow(0 0 8px ${glow}) drop-shadow(0 0 20px ${glow})` }}
+      />
+    </svg>
   );
 }
