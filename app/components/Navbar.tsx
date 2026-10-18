@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import AliveLogo from "./AliveLogo";
 
 /* Sticky top navigation. Collapses to a compact menu on small screens. */
 
@@ -19,17 +20,15 @@ export default function Navbar() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-edge bg-ink/85 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-        <Link href="/" className="flex items-baseline gap-2">
-          <span className="text-xl font-extrabold tracking-tight text-white">
-            5<span className="text-arcade">IN</span>1
-          </span>
+        <Link href="/" className="flex items-center gap-2" aria-label="5IN1 home">
+          <AliveLogo size="sm" />
           <span className="hidden text-xs text-slate-400 sm:inline">
             five games, one native macOS app
           </span>
         </Link>
 
         <button
-          className="rounded-md border border-edge px-3 py-1.5 text-sm text-slate-300 md:hidden"
+          className="btn-alive rounded-md border border-edge bg-panel px-3 py-1.5 text-sm text-slate-300"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-label="Toggle navigation menu"
@@ -52,7 +51,7 @@ export default function Navbar() {
       </nav>
 
       {open && (
-        <ul className="space-y-1 border-t border-edge px-4 py-3 md:hidden">
+        <ul className="pop-in space-y-1 border-t border-edge px-4 py-3 md:hidden">
           {LINKS.map((l) => (
             <li key={l.label}>
               <Link

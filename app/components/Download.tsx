@@ -29,7 +29,7 @@ export default function Download() {
               href={RELEASES_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-5 inline-block rounded-xl bg-arcade px-8 py-3 text-base font-bold text-ink shadow-lg shadow-cyan-500/20 transition-transform hover:scale-[1.03] hover:bg-cyan-300"
+              className="btn-alive mt-5 inline-block rounded-xl bg-arcade px-8 py-3 text-base font-bold text-ink shadow-lg shadow-cyan-500/20 hover:bg-cyan-300"
             >
               Mac releases
             </a>
@@ -46,7 +46,7 @@ export default function Download() {
               href={ANDROID_RELEASES_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-5 inline-block rounded-xl bg-arcade px-8 py-3 text-base font-bold text-ink shadow-lg shadow-cyan-500/20 transition-transform hover:scale-[1.03] hover:bg-cyan-300"
+              className="btn-alive mt-5 inline-block rounded-xl bg-arcade px-8 py-3 text-base font-bold text-ink shadow-lg shadow-cyan-500/20 hover:bg-cyan-300"
             >
               Android releases
             </a>

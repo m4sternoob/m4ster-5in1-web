@@ -1,4 +1,5 @@
 import SectionHeading from "./SectionHeading";
+import Reveal from "./Reveal";
 
 /* Five game cards. Descriptions stick to features that actually ship in the
    app — nothing invented. */
@@ -69,47 +70,52 @@ export default function Games() {
   return (
     <section id="games" className="scroll-mt-20 px-4 py-20 sm:px-6 sm:py-28">
       <div className="mx-auto max-w-6xl">
-        <SectionHeading
-          eyebrow="The lineup"
-          title="Five games. One app. Zero filler."
-          blurb="Every game runs natively on your Mac — no browser tab, no Electron wrapper, no waiting."
-        />
+        <Reveal>
+          <SectionHeading
+            eyebrow="The lineup"
+            title="Five games. One app. Zero filler."
+            blurb="Every game runs natively on your Mac — no browser tab, no Electron wrapper, no waiting."
+          />
+        </Reveal>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {GAMES.map((g) => (
-            <article
-              key={g.name}
-              className="flex flex-col rounded-2xl border border-edge bg-panel p-6 transition-colors hover:border-arcade-dim"
-            >
-              <div className="mb-4 text-4xl" aria-hidden="true">
-                {g.icon}
-              </div>
-              <h3 className="text-lg font-bold text-white">{g.name}</h3>
-              <p className="mt-1 text-sm text-slate-400">{g.tagline}</p>
-              <ul className="mt-4 space-y-2 text-sm text-slate-300">
-                {g.features.map((f) => (
-                  <li key={f} className="flex gap-2">
-                    <span className="text-arcade" aria-hidden="true">
-                      ▸
-                    </span>
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </article>
+          {GAMES.map((g, i) => (
+            <Reveal key={g.name} delay={i * 90} className="h-full">
+              <article className="card-alive flex h-full flex-col rounded-2xl border border-edge bg-panel p-6">
+                <div className="float-slow mb-4 inline-block text-4xl" aria-hidden="true">
+                  {g.icon}
+                </div>
+                <h3 className="text-lg font-bold text-white">{g.name}</h3>
+                <p className="mt-1 text-sm text-slate-400">{g.tagline}</p>
+                <ul className="mt-4 space-y-2 text-sm text-slate-300">
+                  {g.features.map((f) => (
+                    <li key={f} className="flex gap-2">
+                      <span className="text-arcade" aria-hidden="true">
+                        ▸
+                      </span>
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            </Reveal>
           ))}
           {/* Spacer card keeps the grid balanced and links to the download. */}
-          <a
-            href="#download"
-            className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-edge p-6 text-center transition-colors hover:border-arcade hover:bg-panel"
-          >
-            <div className="text-4xl" aria-hidden="true">
-              🍎
-            </div>
-            <p className="mt-4 text-lg font-bold text-white">Get 5IN1 for Mac</p>
-            <p className="mt-1 text-sm text-slate-400">
-              Free. macOS 14+ on Apple Silicon.
-            </p>
-          </a>
+          <Reveal delay={GAMES.length * 90} className="h-full">
+            <a
+              href="#download"
+              className="card-alive flex h-full flex-col items-center justify-center rounded-2xl border border-dashed border-edge p-6 text-center hover:border-arcade hover:bg-panel"
+            >
+              <div className="float-slow text-4xl" aria-hidden="true">
+                🍎
+              </div>
+              <p className="mt-4 text-lg font-bold text-white">
+                Get 5IN1 for Mac
+              </p>
+              <p className="mt-1 text-sm text-slate-400">
+                Free. macOS 14+ on Apple Silicon.
+              </p>
+            </a>
+          </Reveal>
         </div>
       </div>
     </section>
