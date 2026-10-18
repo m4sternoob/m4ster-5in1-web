@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AliveLogo from "./AliveLogo";
+import GridGlow from "./GridGlow";
 import Reveal from "./Reveal";
 
 /* Landing hero: brand, tagline, primary call to action. */
@@ -7,7 +8,8 @@ import Reveal from "./Reveal";
 export default function Hero() {
   return (
     <section className="hero-grid relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-28">
-      <div className="mx-auto max-w-4xl px-4 text-center sm:px-6">
+      <GridGlow />
+      <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6">
         <Reveal delay={0}>
           <p className="mb-4 inline-block rounded-full border border-edge bg-panel px-4 py-1 text-xs font-medium tracking-widest text-slate-300 uppercase">
             Native macOS game app
