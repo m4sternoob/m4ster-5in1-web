@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from "react";
 import {
   COLS,
   ROWS,
@@ -407,8 +407,8 @@ function WinLine({
   winner,
 }: {
   line: number[];
-  boardWrapRef: React.RefObject<HTMLDivElement | null>;
-  discRefs: React.RefObject<Map<number, HTMLSpanElement>>;
+  boardWrapRef: RefObject<HTMLDivElement | null>;
+  discRefs: RefObject<Map<number, HTMLSpanElement>>;
   winner: Mark;
 }) {
   const [geom, setGeom] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
