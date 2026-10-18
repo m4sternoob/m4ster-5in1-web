@@ -17,6 +17,10 @@
 /.next/
 /out/
 
+# capacitor native shells (generated in CI via `npx cap add`; config lives in capacitor.config.ts)
+/android/
+/ios/
+
 # production
 /build
 
