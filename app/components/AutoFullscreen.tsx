@@ -29,38 +29,58 @@ export default function AutoFullscreen() {
 
     let entered = false;
     let userExited = false;
+    let wantsFs = false;
 
-    const tryFs = async () => {
+    // Bulletproof fullscreen: the request must stay synchronous inside the
+    // user gesture (no await before it), skip when already fullscreen as an
+    // installed PWA, and retry when the tab becomes visible again.
+    const goFullscreen = () => {
+      if (window.matchMedia("(display-mode: standalone)").matches) return; // already fullscreen as PWA
+      const el = document.documentElement as HTMLElement & {
+        webkitRequestFullscreen?: () => void;
+      };
+      try {
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      } catch {
+        /* ignored — the tap / visibilitychange retry tries again */
+      }
+    };
+
+    const tryFs = () => {
       if (entered || userExited) return;
       if (!document.fullscreenEnabled) return;
       if (document.fullscreenElement) {
         entered = true;
         return;
       }
-      try {
-        await document.documentElement.requestFullscreen();
-        entered = true;
-      } catch {
-        /* No user gesture yet (or unsupported) — the first-tap
-           listener below retries once the user interacts. */
-      }
+      goFullscreen();
     };
 
     const onFirstTap = () => {
       window.removeEventListener("pointerdown", onFirstTap);
-      void tryFs();
+      // SYNCHRONOUS — no await before the request, or the browser drops the gesture.
+      wantsFs = true;
+      tryFs();
+    };
+
+    const onVisChange = () => {
+      if (!document.hidden && wantsFs) tryFs();
     };
 
     const onFsChange = () => {
       if (entered && !document.fullscreenElement) userExited = true;
+      else if (document.fullscreenElement) entered = true;
     };
 
     document.addEventListener("fullscreenchange", onFsChange);
-    void tryFs();
+    document.addEventListener("visibilitychange", onVisChange);
+    tryFs();
     window.addEventListener("pointerdown", onFirstTap, { passive: true });
 
     return () => {
       document.removeEventListener("fullscreenchange", onFsChange);
+      document.removeEventListener("visibilitychange", onVisChange);
       window.removeEventListener("pointerdown", onFirstTap);
     };
   }, []);
