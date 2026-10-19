@@ -54,6 +54,16 @@ export default function PlayPage() {
       <main className="flex flex-1 items-center justify-center px-4 pt-28 pb-16 sm:px-6">
         <div className="w-full max-w-3xl text-center">
           <Reveal delay={0}>
+            <div className="card-alive mx-auto mb-8 max-w-2xl overflow-hidden rounded-2xl border border-edge">
+              <img
+                src="/og-image.png"
+                alt="5IN1 — five games, one app"
+                className="h-auto w-full"
+                loading="lazy"
+              />
+            </div>
+          </Reveal>
+          <Reveal delay={60}>
             <p className="mb-2 text-xs font-bold tracking-widest text-arcade uppercase">
               Playable in your browser
             </p>

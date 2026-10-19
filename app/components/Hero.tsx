@@ -46,6 +46,16 @@ export default function Hero() {
             </Link>
           </div>
         </Reveal>
+        <Reveal delay={470}>
+          <div className="card-alive mx-auto mt-12 max-w-3xl overflow-hidden rounded-2xl border border-edge">
+            <img
+              src="/hero-banner.png"
+              alt="5IN1 — five games, one app, everywhere"
+              className="h-auto w-full"
+              loading="lazy"
+            />
+          </div>
+        </Reveal>
         <Reveal delay={520}>
           <p className="mt-8 text-xs text-slate-400">
             Web &middot; Windows &middot; macOS &middot; Android &middot; iOS

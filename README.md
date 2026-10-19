@@ -1,3 +1,5 @@
+![5IN1 — five games, one app, everywhere](https://raw.githubusercontent.com/m4sternoob/m4ster-5in1-web/main/public/og-image.png)
+
 # 5in1-web
 
 The marketing and download site for **5IN1** — m4sternoob's native macOS game
