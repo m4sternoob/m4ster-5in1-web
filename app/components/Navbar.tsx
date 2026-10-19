@@ -8,10 +8,10 @@ import AliveLogo from "./AliveLogo";
    The logo is 5x and fluid (clamp) — nav grows taller to fit it. */
 
 const LINKS = [
-  { href: "#games", label: "Games" },
-  { href: "#download", label: "Download" },
-  { href: "#roadmap", label: "Roadmap" },
-  { href: "#tech", label: "Tech" },
+  { href: "/#games", label: "Games" },
+  { href: "/#download", label: "Download" },
+  { href: "/#roadmap", label: "Roadmap" },
+  { href: "/#tech", label: "Tech" },
   { href: "/play", label: "Play demos" },
 ];
 
