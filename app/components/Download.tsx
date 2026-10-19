@@ -1,9 +1,9 @@
 import SectionHeading from "./SectionHeading";
 import Reveal from "./Reveal";
 import {
-  RELEASES_URL,
-  ANDROID_RELEASES_URL,
-  WINDOWS_RELEASES_URL,
+  WINDOWS_DOWNLOAD_URL,
+  MAC_DOWNLOAD_URL,
+  ANDROID_DOWNLOAD_URL,
   SYS_REQUIREMENTS,
 } from "../data/site";
 
@@ -13,20 +13,20 @@ const PLATFORMS = [
   {
     name: "Windows",
     desc: "Native .exe installer via Tauri — fast, tiny, offline.",
-    href: WINDOWS_RELEASES_URL,
-    cta: "Windows releases",
+    href: WINDOWS_DOWNLOAD_URL,
+    cta: "Download .exe",
   },
   {
     name: "macOS",
     desc: "Native .dmg via Tauri — Apple Silicon and Intel.",
-    href: RELEASES_URL,
-    cta: "Mac releases",
+    href: MAC_DOWNLOAD_URL,
+    cta: "Download .dmg",
   },
   {
     name: "Android",
     desc: "Native .apk via Capacitor — offline, no accounts, no ads.",
-    href: ANDROID_RELEASES_URL,
-    cta: "Android releases",
+    href: ANDROID_DOWNLOAD_URL,
+    cta: "Download .apk",
   },
 ];
 
@@ -63,8 +63,6 @@ export default function Download() {
                 </p>
                 <a
                   href={p.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="btn-alive download-btn mt-6 inline-block rounded-xl bg-arcade px-8 py-3 text-base font-bold text-ink shadow-lg shadow-cyan-500/20 hover:bg-cyan-300"
                 >
                   {p.cta}
