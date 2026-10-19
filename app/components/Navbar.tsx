@@ -22,8 +22,10 @@ function rewindPage() {
   window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
 }
 
-/* Sticky top navigation — premium dark gradient with cyan/indigo tint,
-   backdrop blur, and an animated RGB separator as the bottom border.
+/* Sticky top navigation — full-bleed, no box. The background is a
+   vertical fade into transparency so the animated page background
+   (TileGrid + aura) shows through and the bar reads as part of the
+   page. An animated RGB separator is the bottom border.
    Collapses to a compact menu on small screens. The logo is 5x and
    fluid (clamp) — nav grows taller to fit it. */
 
@@ -52,7 +54,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-edge bg-[linear-gradient(160deg,rgba(20,25,42,0.9),rgba(11,14,20,0.86))] shadow-[0_12px_40px_-12px_rgba(0,0,0,0.6)] backdrop-blur-md">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-edge bg-[linear-gradient(180deg,rgba(11,14,20,0.72),rgba(11,14,20,0.2)_60%,rgba(11,14,20,0))] backdrop-blur-md">
       <nav className="flex items-center justify-between gap-4 py-4 pr-4 sm:pr-6">
         <Link
           href="/"

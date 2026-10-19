@@ -1,12 +1,14 @@
 import { CONTACT_EMAIL, GITHUB_URL } from "../data/site";
 import AliveLogo from "./AliveLogo";
 
-/* Site footer: contact, repo link, and a small disclaimer.
-   Brand mark is the 5x alive logo, fluid via clamp(). */
+/* Site footer: full-bleed, no box. The background fades from
+   transparent at the top into a soft tint at the bottom so it melts
+   into the page's animated background. Contact, repo link, and a
+   small disclaimer. Brand mark is the 5x alive logo, fluid via clamp(). */
 
 export default function Footer() {
   return (
-    <footer className="relative mt-auto border-t border-edge bg-[linear-gradient(180deg,rgba(11,14,20,0.88),rgba(19,25,43,0.92))] backdrop-blur-md">
+    <footer className="relative mt-auto border-t border-edge bg-[linear-gradient(180deg,rgba(11,14,20,0),rgba(11,14,20,0.35)_45%,rgba(11,14,20,0.7))] backdrop-blur-md">
       {/* RGB separator as the glowing top border. The border-edge line
           stays as a fallback when RGB is disabled. */}
       <div
