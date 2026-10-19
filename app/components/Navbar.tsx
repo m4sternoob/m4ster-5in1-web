@@ -55,7 +55,7 @@ export default function Navbar() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-edge bg-transparent pt-[env(safe-area-inset-top)]">
-      <nav className="flex items-center justify-between gap-4 py-4 pr-4 sm:pr-6">
+      <nav className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <Link
           href="/"
           onClick={handleLogoClick}
