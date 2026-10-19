@@ -6,6 +6,8 @@ import TileGrid from "./components/TileGrid";
 import OrbCursor from "./components/OrbCursor";
 import CustomizeToolbar from "./components/CustomizeToolbar";
 import BackToTop from "./components/BackToTop";
+import InstallApp from "./components/InstallApp";
+import PwaRegister from "./components/PwaRegister";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -71,6 +73,17 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: "/favicon.svg",
+    apple: "/apple-icon.png",
+  },
+  manifest: "/manifest.json",
+  themeColor: "#0a0a1a",
+  appleWebApp: {
+    capable: true,
+    title: "5IN1",
+    statusBarStyle: "black-translucent",
+  },
+  formatDetection: {
+    telephone: false,
   },
   openGraph: {
     title: SITE_TITLE,
@@ -115,6 +128,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <OrbCursor />
         <CustomizeToolbar />
         <BackToTop />
+        <InstallApp />
+        <PwaRegister />
         {children}
       </body>
     </html>
