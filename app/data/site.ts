@@ -10,7 +10,7 @@ export const RELEASES_URL = `${GITHUB_URL}/releases`;
    files, not the releases page. Bump the tag/filenames on new releases. */
 export const WINDOWS_DOWNLOAD_URL = `${GITHUB_URL}/releases/download/v1.0.3/5IN1_0.1.0_x64-setup.exe`;
 export const MAC_DOWNLOAD_URL = `${GITHUB_URL}/releases/download/v1.0.3/5IN1_0.1.0_aarch64.dmg`;
-export const ANDROID_DOWNLOAD_URL = `${GITHUB_URL}/releases/download/v1.0.3/app-release-unsigned.apk`;
+export const ANDROID_DOWNLOAD_URL = `${GITHUB_URL}/releases/download/v1.0.3/app-debug.apk`;
 
 export const CONTACT_EMAIL = "xyaz@gmail.com";
 
