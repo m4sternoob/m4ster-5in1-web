@@ -1,4 +1,4 @@
-# 6IN1 Cross-Platform Design System
+# 5IN1 Cross-Platform Design System
 
 **Version:** 1.0 — 2026-10-18
 **Status:** SINGLE SOURCE OF TRUTH. Every platform (web, Android, Windows, Mac, iOS) must match this spec exactly. Fortnite-level parity: a user should not be able to tell which platform they're on from the UI alone.

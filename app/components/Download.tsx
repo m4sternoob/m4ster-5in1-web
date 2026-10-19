@@ -19,7 +19,7 @@ export default function Download() {
       <div className="mx-auto max-w-4xl text-center">
         <SectionHeading
           eyebrow="Get the app"
-          title="Download 6IN1"
+          title="Download 5IN1"
           blurb="Pick your platform below. All builds are free, offline, and ad-free."
         />
 
@@ -62,7 +62,7 @@ export default function Download() {
           <div className="rounded-2xl border border-edge bg-panel px-6 py-8">
             <h3 className="text-lg font-bold text-white">Windows</h3>
             <p className="mt-1 text-sm text-slate-400">
-              6IN1 installer (.exe) — free, offline, no accounts.
+              5IN1 installer (.exe) — free, offline, no accounts.
             </p>
             <a
               href={WINDOWS_RELEASES_URL}

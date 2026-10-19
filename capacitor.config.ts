@@ -2,7 +2,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "com.m4ster.sixinone",
-  appName: "6IN1",
+  appName: "5IN1",
   // Next.js static export output — the exact same build Tauri and Vercel use.
   webDir: "out",
   // Keep the web app edge-to-edge; the UI already handles its own safe areas.
