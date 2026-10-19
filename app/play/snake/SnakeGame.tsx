@@ -130,6 +130,7 @@ export default function SnakeGame() {
     g.comboTtl = 0;
     g.alive = true;
     g.running = true;
+    g.walls = G.current.walls; // re-assert current wall mode (never stale)
     g.stepAcc = 0;
     g.interp = 1;
     g.particles = [];
@@ -580,7 +581,7 @@ export default function SnakeGame() {
           <button
             key={w}
             type="button"
-            onClick={() => setWalls(w)}
+            onClick={() => { setWalls(w); G.current.walls = w; }}
             className={`btn-alive rounded-lg border px-3 py-1.5 text-xs font-semibold capitalize ${
               walls === w
                 ? "border-arcade bg-arcade text-ink"
