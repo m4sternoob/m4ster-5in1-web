@@ -185,6 +185,28 @@ body {
     0 0 24px rgb(34 211 238 / 0.18);
 }
 
+/* Portfolio-style game frames: each game gets its own distinct framed
+   showcase with its own accent color (--accent), border, and glow. */
+.game-frame {
+  border: 2px solid color-mix(in srgb, var(--accent, #22d3ee) 55%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--accent, #22d3ee) 5%, #12161f);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--accent, #22d3ee) 14%, transparent);
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1.4, 0.36, 1),
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+  will-change: transform;
+}
+
+.game-frame:hover {
+  transform: translateY(-6px);
+  border-color: var(--accent, #22d3ee);
+  box-shadow:
+    0 16px 40px rgb(0 0 0 / 0.5),
+    0 0 36px color-mix(in srgb, var(--accent, #22d3ee) 30%, transparent);
+}
+
 /* Shimmer sweep for loading / skeleton states. */
 @keyframes shimmer-sweep {
   0% {
@@ -380,6 +402,10 @@ body {
   .pop-in {
     opacity: 1;
     animation: none;
+  }
+
+  .game-frame:hover {
+    transform: none;
   }
 }
 
