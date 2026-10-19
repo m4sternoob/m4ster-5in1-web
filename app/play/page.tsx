@@ -5,12 +5,12 @@ import Footer from "../components/Footer";
 import Reveal from "../components/Reveal";
 
 export const metadata: Metadata = {
-  title: "Play the Games — M4STER-5IN1",
+  title: "Play the Games — M4ster-5IN1",
   description:
-    "Play all five M4STER-5IN1 games free in your browser — Snake, Connect 4, Memory Match, Tic-Tac-Toe, and Number Guessing. No download, no account.",
+    "Play all five M4ster-5IN1 games free in your browser — Snake, Connect 4, Memory Match, Tic-Tac-Toe, and Number Guessing. No download, no account.",
 };
 
-/* /play hub: every 5IN1 game playable in the browser. */
+/* /play hub: every M4ster-5IN1 game playable in the browser. */
 
 const GAMES = [
   {
@@ -55,7 +55,7 @@ export default function PlayPage() {
             <div className="card-alive mx-auto mb-8 max-w-2xl overflow-hidden rounded-2xl border border-edge">
               <img
                 src="/og-image.png"
-                alt="5IN1 — five games, one app"
+                alt="M4ster-5IN1 — five games, one app"
                 className="h-auto w-full"
                 loading="lazy"
               />
@@ -68,12 +68,12 @@ export default function PlayPage() {
           </Reveal>
           <Reveal delay={100}>
             <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              Play <span className="text-shimmer">5IN1</span>
+              Play <span className="text-shimmer">M4ster-5IN1</span>
             </h1>
           </Reveal>
           <Reveal delay={180}>
             <p className="mx-auto mt-3 max-w-xl text-sm text-slate-400">
-              All five games from the 5IN1 app, running right here — no
+              All five games from the M4ster-5IN1 app, running right here — no
               download needed.
             </p>
           </Reveal>
@@ -99,7 +99,7 @@ export default function PlayPage() {
             <p className="mt-8 text-xs text-slate-500">
               Want the full experience?{" "}
               <Link href="/" className="text-arcade hover:underline">
-                Get the 5IN1 app
+                Get the M4ster-5IN1 app
               </Link>
               .
             </p>

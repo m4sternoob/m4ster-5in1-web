@@ -5,7 +5,7 @@ import BackToGames from "../BackToGames";
 import TicTacToeDemo from "../TicTacToeDemo";
 
 export const metadata: Metadata = {
-  title: "Tic-Tac-Toe — M4STER-5IN1",
+  title: "Tic-Tac-Toe — M4ster-5IN1",
   description:
     "Play Tic-Tac-Toe free in your browser against an unbeatable minimax CPU. No download, no account.",
 };

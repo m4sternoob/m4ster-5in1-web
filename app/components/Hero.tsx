@@ -98,7 +98,7 @@ export default function Hero() {
         <BannerReveal>
           <img
             src="/hero-banner.png"
-            alt="5IN1 — five games, one app, everywhere"
+            alt="M4ster-5IN1 — five games, one app, everywhere"
             className="h-auto w-full"
             loading="lazy"
           />

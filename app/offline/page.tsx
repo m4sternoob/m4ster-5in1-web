@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Offline — 5IN1",
+  title: "Offline — M4ster-5IN1",
   robots: { index: false, follow: false },
 };
 
@@ -23,7 +23,7 @@ export default function OfflinePage() {
       <div style={{ fontSize: 56 }}>🎮</div>
       <h1 style={{ fontSize: 28, margin: 0 }}>You&apos;re offline</h1>
       <p style={{ opacity: 0.7, maxWidth: 340, margin: 0 }}>
-        5IN1 needs a connection for this page. Pages you&apos;ve already visited
+        M4ster-5IN1 needs a connection for this page. Pages you&apos;ve already visited
         still work offline.
       </p>
       <a
@@ -37,7 +37,7 @@ export default function OfflinePage() {
           textDecoration: "none",
         }}
       >
-        Back to 5IN1
+        Back to M4ster-5IN1
       </a>
     </main>
   );

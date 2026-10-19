@@ -1,6 +1,6 @@
-/* The M4STER-5IN1 brand mark — a designed vector monogram, alive.
+/* The M4ster-5IN1 brand mark — a designed vector monogram, alive.
    One continuous neon style: M4STER- in flowing script-like strokes,
-   then the 5IN1 icon (5 → I → N → 1) with breathing room between letters.
+   then the M4ster-5IN1 icon (5 → I → N → 1) with breathing room between letters.
    Custom vector paths, never plain text. It breathes forever via .logo-alive.
    Sticker style: a SOLID black outline (16px) sits under every letter,
    the crisp neon core (9px) on top, and a blurred halo behind everything.
@@ -66,7 +66,7 @@ function markPaths(gradientId: string, filterId: string) {
   );
 }
 
-/* Crops of the full wordmark — "M4STER" is x 10–435, "5IN1" is x 480–740
+/* Crops of the full wordmark — "M4STER" is x 10–435, "M4ster-5IN1" is x 480–740
    (path coords plus outline margin). */
 const STACK_TOP_VIEWBOX = "10 0 425 140";
 const STACK_BOTTOM_VIEWBOX = "480 0 260 140";
@@ -94,7 +94,7 @@ export default function AliveLogo({
         ? { height: "calc(clamp(1.125rem, 0.875rem + 1.5vw, 2.5rem) * var(--logo-nav-scale, 1))" }
         : undefined;
   if (stacked) {
-    /* Mobile navbar: two-line stack — "M4STER" over "5IN1", each a crop
+    /* Mobile navbar: two-line stack — "M4STER" over "M4ster-5IN1", each a crop
        of the same vector wordmark so the design language is identical. */
     return (
       <span className="logo-hover mx-auto inline-flex max-w-full flex-col items-center gap-1">
@@ -113,7 +113,7 @@ export default function AliveLogo({
           className={`logo-alive neon-logo ${cls}`}
           style={varStyle}
           role="img"
-          aria-label="5IN1"
+          aria-label="M4ster-5IN1"
         >
           {markDefs("flow51b", "halo51b")}
           {markPaths("flow51b", "halo51b")}
@@ -129,7 +129,7 @@ export default function AliveLogo({
         className={`logo-alive neon-logo ${cls}`}
         style={varStyle}
         role="img"
-        aria-label="M4STER-5IN1"
+        aria-label="M4ster-5IN1"
       >
         {markDefs("flow51", "halo51")}
         {markPaths("flow51", "halo51")}

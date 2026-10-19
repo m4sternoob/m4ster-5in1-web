@@ -60,7 +60,7 @@ export default function Navbar() {
           href="/"
           onClick={handleLogoClick}
           className="logo-hover flex shrink-0 items-center gap-3"
-          aria-label="5IN1 home — rewind to top"
+          aria-label="M4ster-5IN1 home — rewind to top"
         >
           {/* Mobile: two-line stack on the right. Desktop: horizontal mark on the left. */}
           <span className="sm:hidden">

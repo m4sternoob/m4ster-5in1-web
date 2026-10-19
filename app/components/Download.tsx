@@ -48,7 +48,7 @@ export default function Download() {
         <Reveal>
           <SectionHeading
             eyebrow="Get the app"
-            title="Download 5IN1"
+            title="Download M4ster-5IN1"
             blurb="Pick your platform below. All builds are free, offline, and ad-free — same app, every screen."
           />
         </Reveal>

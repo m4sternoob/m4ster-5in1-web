@@ -5,7 +5,7 @@ import BackToGames from "../BackToGames";
 import GuessingDemo from "../GuessingDemo";
 
 export const metadata: Metadata = {
-  title: "Number Guessing — M4STER-5IN1",
+  title: "Number Guessing — M4ster-5IN1",
   description:
     "Play the Number Guessing Game free in your browser — pick a difficulty, beat the attempts limit, track your streak. No download, no account.",
 };

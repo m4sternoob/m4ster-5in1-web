@@ -206,7 +206,7 @@ export default function GuessingDemo() {
         <FullscreenButton />
       </div>
       <p className="pop-in mt-3 text-sm text-slate-400" style={{ "--pop-delay": "160ms" } as CSSProperties}>
-        The game that started 5IN1 — guess the secret number before your
+        The game that started M4ster-5IN1 — guess the secret number before your
         attempts run out.
       </p>
 
@@ -408,7 +408,7 @@ export default function GuessingDemo() {
       <p className="mt-8 text-xs text-slate-500">
         Five games, one app —{" "}
         <Link href="/" className="text-arcade hover:underline">
-          5IN1
+          M4ster-5IN1
         </Link>
         , everywhere.
       </p>

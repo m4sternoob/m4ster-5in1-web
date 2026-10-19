@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 /* Living game-tile grid: a fixed full-viewport canvas of square tiles, each
-   running a tiny live animation drawn from the five 5IN1 games — a slithering
+   running a tiny live animation drawn from the five M4ster-5IN1 games — a slithering
    snake ribbon, flipping memory cards, drawing X/O marks, a dropping
    Connect 4 disc, and rolling guess digits. Tiles breathe faintly at rest;
    the cursor lights them up, speeds their animation, and fires expanding

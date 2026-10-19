@@ -22,7 +22,7 @@ const geistMono = Geist_Mono({
 
 const SITE_URL = "https://m4ster-5in1.vercel.app";
 const SITE_TITLE =
-  "5IN1 — 9 Games in One App | Play Free Browser Games";
+  "M4ster-5IN1 — Five Games, One App | Play Free Browser Games";
 const SITE_DESC =
   "Play 9 free browser games in one app — Snake, 2048, Memory Match, Minesweeper, Tic-Tac-Toe, Connect 4, Number Guessing, Snakes & Ladders and more. No downloads, no signup, 100% free.";
 const SITE_KEYWORDS = [
@@ -34,8 +34,8 @@ const SITE_KEYWORDS = [
   "tic tac toe online",
   "multi-game app",
   "free online games",
-  "5in1 games",
-  "m4ster 5in1",
+  "m4ster-5in1 games",
+  "m4ster-5in1",
   "connect 4 online",
   "number guessing game",
 ];
@@ -43,8 +43,8 @@ const SITE_KEYWORDS = [
 const JSON_LD = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  name: "5IN1",
-  alternateName: "m4ster 5IN1",
+  name: "M4ster-5IN1",
+  alternateName: "m4ster M4ster-5IN1",
   url: SITE_URL,
   description: SITE_DESC,
   applicationCategory: "GameApplication",
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    title: "5IN1",
+    title: "M4ster-5IN1",
     statusBarStyle: "black-translucent",
   },
   formatDetection: {
@@ -89,13 +89,13 @@ export const metadata: Metadata = {
     title: SITE_TITLE,
     description: SITE_DESC,
     url: SITE_URL,
-    siteName: "M4STER-5IN1",
+    siteName: "M4ster-5IN1",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "M4STER-5IN1 — five games, one app, everywhere",
+        alt: "M4ster-5IN1 — five games, one app, everywhere",
       },
     ],
     type: "website",

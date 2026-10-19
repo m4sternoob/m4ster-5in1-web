@@ -8,7 +8,7 @@ import Footer from "./components/Footer";
 import RgbSeparator from "./components/RgbSeparator";
 import ScrollReveal from "./components/ScrollReveal";
 
-/* 5IN1 marketing site: hero, game lineup, download, roadmap, tech stack.
+/* M4ster-5IN1 marketing site: hero, game lineup, download, roadmap, tech stack.
    The alive background (aura + tile grid) comes from the root layout.
    Each section unlocks on scroll with its own animation flavor. */
 

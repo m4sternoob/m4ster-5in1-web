@@ -20,6 +20,7 @@ export default function InstallApp() {
   useEffect(() => {
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
+      window.matchMedia("(display-mode: fullscreen)").matches ||
       (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
     if (isStandalone) {
       setInstalled(true);
@@ -82,12 +83,12 @@ export default function InstallApp() {
             boxShadow: "0 0 24px rgba(34,211,238,0.25)",
           }}
         >
-          Tap <b>Share</b> → <b>Add to Home Screen</b> to install 5IN1.
+          Tap <b>Share</b> → <b>Add to Home Screen</b> to install M4ster-5IN1.
         </div>
       )}
       <button
         onClick={install}
-        aria-label="Install 5IN1 app"
+        aria-label="Install M4ster-5IN1 app"
         style={{
           display: "flex",
           alignItems: "center",

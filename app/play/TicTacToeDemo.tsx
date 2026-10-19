@@ -221,7 +221,7 @@ export default function TicTacToeDemo() {
 
       <p className="mt-8 text-xs text-slate-500">
         Five games, one app —{" "}
-        <Link href="/" className="text-arcade hover:underline">5IN1</Link>, everywhere.
+        <Link href="/" className="text-arcade hover:underline">M4ster-5IN1</Link>, everywhere.
       </p>
 
       <style>{`
