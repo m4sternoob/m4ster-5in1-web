@@ -24,8 +24,20 @@ const PHASES: Phase[] = [
   },
   {
     version: "v1.1",
-    title: "Feel & polish",
+    title: "Alive everywhere",
     status: "in progress",
+    items: [
+      "Alive background site-wide: cursor-reactive grid boxes on every page and the footer",
+      "5x bigger logo with responsive desktop/mobile layout",
+      "Hero banner with slow cinematic scroll reveal",
+      "Download buttons linking straight to .exe, .dmg, and .apk files",
+      "Build pipeline fixes: Tauri (Windows/Mac) and Capacitor (Android) green on release tags",
+    ],
+  },
+  {
+    version: "v1.2",
+    title: "Feel & polish",
+    status: "planned",
     items: [
       "Win confetti across all five games",
       "Game-switch transitions",
@@ -35,7 +47,7 @@ const PHASES: Phase[] = [
     ],
   },
   {
-    version: "v1.2",
+    version: "v1.3",
     title: "Social & sharing",
     status: "planned",
     items: [
