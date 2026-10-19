@@ -88,7 +88,7 @@ export default function MemoryGame() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-lg">
+    <div className="mx-auto w-full sm:max-w-lg">
       <div className="pop-in mb-4 flex items-center justify-center gap-2" style={{ "--pop-delay": "60ms" } as CSSProperties}>
         {SIZES.map((s) => (
           <button

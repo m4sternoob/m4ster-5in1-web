@@ -49,7 +49,7 @@ export default function PlayPage() {
   return (
     <div className="flex min-h-full flex-col">
       <Navbar />
-      <main className="flex flex-1 items-center justify-center px-4 pt-28 pb-16 sm:px-6">
+      <main className="flex flex-1 items-center justify-center px-0 pt-24 pb-10 sm:px-6 sm:pt-28 sm:pb-16">
         <div className="w-full max-w-3xl text-center">
           <Reveal delay={0}>
             <div className="card-alive mx-auto mb-8 max-w-2xl overflow-hidden rounded-2xl border border-edge">

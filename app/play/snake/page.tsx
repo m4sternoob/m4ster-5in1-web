@@ -14,7 +14,7 @@ export default function Page() {
   return (
     <div className="flex min-h-full flex-col">
       <Navbar />
-      <main className="flex flex-1 items-center justify-center px-4 pt-28 pb-16 sm:px-6">
+      <main className="flex flex-1 items-center justify-center px-0 pt-24 pb-10 sm:px-6 sm:pt-28 sm:pb-16">
         <GameShell
           title="Snake"
           tagline="The classic, with speeds, wrap walls, and golden food — same rules as the 5IN1 app."

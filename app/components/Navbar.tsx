@@ -52,7 +52,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-edge bg-[linear-gradient(160deg,rgba(20,25,42,0.97),rgba(11,14,20,0.94))] shadow-[0_12px_40px_-12px_rgba(0,0,0,0.6)] backdrop-blur-md">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-edge bg-[linear-gradient(160deg,rgba(20,25,42,0.9),rgba(11,14,20,0.86))] shadow-[0_12px_40px_-12px_rgba(0,0,0,0.6)] backdrop-blur-md">
       <nav className="flex items-center justify-between gap-4 py-4 pr-4 sm:pr-6">
         <Link
           href="/"

@@ -239,7 +239,7 @@ export default function Connect4Game() {
           : "Your move — tap a column.";
 
   return (
-    <div className="mx-auto w-full max-w-md">
+    <div className="mx-auto w-full sm:max-w-md">
       <div className="pop-in mb-4 flex items-center justify-center gap-2" style={{ "--pop-delay": "60ms" } as CSSProperties}>
         {([true, false] as const).map((h) => (
           <button
