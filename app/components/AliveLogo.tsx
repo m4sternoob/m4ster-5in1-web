@@ -14,7 +14,7 @@ export default function AliveLogo({ size = "md" }: { size?: "sm" | "md" | "lg" }
      always centers instead of overflowing; sm/md keep height-based sizing. */
   const cls =
     size === "lg"
-      ? "h-auto w-[min(94vw,58rem)]"
+      ? "h-auto w-[min(80vw,36rem)]"
       : size === "sm"
         ? "h-[clamp(2rem,1.5rem+4vw,6.25rem)] w-auto"
         : "h-[clamp(2rem,1.25rem+4vw,5.625rem)] w-auto";
