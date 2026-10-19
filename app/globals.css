@@ -667,6 +667,12 @@ body.no-rgb .rgb-sep {
   display: none;
 }
 
+/* Customize toolbar: kill the animated background layers */
+body.no-bg-anim .tile-grid-layer,
+body.no-bg-anim .aura-layer {
+  display: none;
+}
+
 /* ------------------------------------------------------------------
    2. SCROLL ANIMATIONS — each section unlocks with its own flavor.
    Variants: fade-up, scale-in, slide-left, slide-right, blur-in.

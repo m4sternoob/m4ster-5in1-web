@@ -4,6 +4,7 @@ import "./globals.css";
 import AuraBackground from "./components/AuraBackground";
 import TileGrid from "./components/TileGrid";
 import OrbCursor from "./components/OrbCursor";
+import CustomizeToolbar from "./components/CustomizeToolbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <AuraBackground />
         <TileGrid />
         <OrbCursor />
+        <CustomizeToolbar />
         {children}
       </body>
     </html>

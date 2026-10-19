@@ -28,7 +28,7 @@ export default function Navbar() {
         >
           <AliveLogo size="sm" />
           <span className="hidden text-xs whitespace-nowrap text-slate-400 sm:inline">
-            five games, every platform
+            Five GAMES - (ALL PLATFORMS 1::1)
           </span>
         </Link>
 
