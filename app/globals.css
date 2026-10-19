@@ -931,3 +931,63 @@ body.rewind *::before,
 body.rewind *::after {
   animation-direction: reverse !important;
 }
+
+/* ------------------------------------------------------------------
+   Customize toolbar — touch-friendly controls (mobile).
+   Range inputs: `touch-action: pan-y` gives horizontal drags to the
+   slider thumb while the browser keeps vertical page scroll. Without
+   this, mobile browsers may steal the gesture for scrolling and the
+   slider feels dead. Thumbs are oversized for fat-finger taps.
+   ------------------------------------------------------------------ */
+.slider-touch {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 32px; /* generous touch hit area */
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+.slider-touch::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: #232a38;
+}
+.slider-touch::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  margin-top: -11px; /* center 28px thumb on 6px track */
+  border-radius: 9999px;
+  background: #22d3ee;
+  border: 2px solid #0b0e14;
+  box-shadow: 0 0 14px rgb(34 211 238 / 0.65);
+}
+.slider-touch::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: #232a38;
+}
+.slider-touch::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: #22d3ee;
+  border: 2px solid #0b0e14;
+  box-shadow: 0 0 14px rgb(34 211 238 / 0.65);
+}
+.slider-touch:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+}
+
+/* Toolbar buttons/toggles: kill the 300ms tap delay and double-tap
+   zoom so taps register instantly on touch devices. */
+.tap-fast {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}

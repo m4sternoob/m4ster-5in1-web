@@ -51,7 +51,7 @@ function Row({
   children: React.ReactNode;
 }) {
   return (
-    <label className="block">
+    <label className="block select-none">
       <span className="mb-1 flex items-center justify-between text-xs text-slate-300">
         <span>{label}</span>
         <span className="font-mono text-arcade">{display}</span>
@@ -75,7 +75,7 @@ function Toggle({
       type="button"
       onClick={() => onChange(!checked)}
       aria-pressed={checked}
-      className="flex w-full items-center justify-between text-xs text-slate-300"
+      className="tap-fast flex w-full select-none items-center justify-between py-1.5 text-xs text-slate-300"
     >
       <span>{label}</span>
       <span
@@ -132,13 +132,13 @@ export default function CustomizeToolbar() {
   return (
     <div className="fixed right-4 bottom-4 z-[9998]">
       {open && (
-        <div className="pop-in mb-3 w-64 space-y-4 rounded-xl border border-edge bg-panel/95 p-4 shadow-2xl backdrop-blur">
+        <div className="pop-in mb-3 max-h-[80dvh] w-64 space-y-4 overflow-y-auto overscroll-contain rounded-xl border border-edge bg-panel/95 p-4 shadow-2xl backdrop-blur select-none">
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-slate-100">Customize</span>
             <button
               type="button"
               onClick={reset}
-              className="text-xs text-slate-400 hover:text-arcade"
+              className="tap-fast text-xs text-slate-400 hover:text-arcade"
             >
               Reset
             </button>
@@ -156,7 +156,7 @@ export default function CustomizeToolbar() {
               step={0.05}
               value={s.navLogo}
               onChange={(e) => update({ navLogo: Number(e.target.value) })}
-              className="w-full accent-cyan-400"
+              className="slider-touch w-full"
               aria-label="Navbar logo size"
             />
           </Row>
@@ -173,7 +173,7 @@ export default function CustomizeToolbar() {
               step={0.05}
               value={s.heroLogo}
               onChange={(e) => update({ heroLogo: Number(e.target.value) })}
-              className="w-full accent-cyan-400"
+              className="slider-touch w-full"
               aria-label="Hero logo size"
             />
           </Row>
@@ -190,7 +190,7 @@ export default function CustomizeToolbar() {
               step={0.05}
               value={s.glow}
               onChange={(e) => update({ glow: Number(e.target.value) })}
-              className="w-full accent-cyan-400"
+              className="slider-touch w-full"
               aria-label="Glow intensity"
             />
           </Row>
@@ -227,7 +227,7 @@ export default function CustomizeToolbar() {
                 step={1}
                 value={s.rgbSpeed}
                 onChange={(e) => update({ rgbSpeed: Number(e.target.value) })}
-                className="w-full accent-cyan-400"
+                className="slider-touch w-full"
                 aria-label="RGB flow speed"
               />
             </Row>
@@ -240,7 +240,7 @@ export default function CustomizeToolbar() {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-label="Toggle customize toolbar"
-        className="btn-alive flex h-12 w-12 items-center justify-center rounded-full border border-edge bg-panel text-lg text-arcade shadow-lg hover:border-arcade"
+        className="tap-fast btn-alive flex h-12 w-12 items-center justify-center rounded-full border border-edge bg-panel text-lg text-arcade shadow-lg hover:border-arcade"
       >
         <svg
           width="20"
