@@ -8,7 +8,7 @@ import AliveLogo from "./AliveLogo";
 
 export default function Footer() {
   return (
-    <footer className="relative mt-auto border-t border-edge bg-[linear-gradient(180deg,rgba(11,14,20,0),rgba(11,14,20,0.35)_45%,rgba(11,14,20,0.7))] backdrop-blur-md">
+    <footer className="relative mt-auto w-full border-t border-edge bg-transparent">
       {/* RGB separator as the glowing top border. The border-edge line
           stays as a fallback when RGB is disabled. */}
       <div

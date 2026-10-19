@@ -54,7 +54,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-edge pt-[env(safe-area-inset-top)] bg-[linear-gradient(180deg,rgba(11,14,20,0.42),rgba(11,14,20,0.1)_60%,rgba(11,14,20,0))] backdrop-blur-md">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-edge bg-transparent pt-[env(safe-area-inset-top)]">
       <nav className="flex items-center justify-between gap-4 py-4 pr-4 sm:pr-6">
         <Link
           href="/"
@@ -93,7 +93,7 @@ export default function Navbar() {
       </nav>
 
       {open && (
-        <ul className="pop-in space-y-1 border-t border-edge px-4 py-3 md:hidden">
+        <ul className="pop-in space-y-1 border-t border-edge bg-panel/95 px-4 py-3 backdrop-blur-md md:hidden">
           {LINKS.map((l) => (
             <li key={l.label}>
               <Link
