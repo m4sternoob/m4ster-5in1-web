@@ -524,7 +524,7 @@ export default function SnakeGame() {
   useEffect(() => { G.current.walls = walls; }, [walls]);
 
   return (
-    <div className="mx-auto w-full sm:max-w-sm">
+    <div className="mx-auto w-full overflow-x-clip sm:max-w-sm">
       <div className="pop-in mb-4 flex items-center justify-center gap-2.5" style={{ ["--pop-delay" as string]: "60ms" }}>
         <div className="rounded-xl border border-edge bg-panel px-4 py-2">
           <p className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Score</p>
@@ -595,7 +595,7 @@ export default function SnakeGame() {
 
       <div
         ref={wrapRef}
-        className="pop-in touch-none overflow-hidden rounded-2xl border border-edge bg-panel p-2.5 select-none"
+        className="pop-in mx-auto w-[88%] max-w-full touch-none overflow-hidden rounded-2xl border border-edge bg-panel p-2.5 select-none"
         style={{ ["--pop-delay" as string]: "140ms" }}
         onTouchStart={(e) => {
           const t = e.touches[0];
@@ -622,7 +622,7 @@ export default function SnakeGame() {
       </div>
 
       {/* D-pad for touch screens — red, 20% opacity, above overlays */}
-      <div className="relative z-20 mx-auto mt-1 grid w-36 grid-cols-3 gap-1.5 sm:hidden">
+      <div className="relative z-20 mx-auto -mt-1.5 grid w-36 grid-cols-3 gap-1.5 sm:hidden">
         <div />
         <button type="button" aria-label="Up" onTouchStart={() => steer(DIRS.up)} onClick={() => steer(DIRS.up)} className="btn-alive rounded-lg border border-red-500/40 bg-red-500/20 py-2 text-lg text-red-300">↑</button>
         <div />
