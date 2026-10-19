@@ -2,7 +2,25 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import AliveLogo from "./AliveLogo";
+
+/* Logo rewind: clicking the top-left logo plays every CSS animation
+   backwards for a beat while the page glides back to the top. If we are
+   on another page, navigate home first, then rewind there. */
+function rewindPage() {
+  const reduceMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+  if (!reduceMotion) {
+    document.body.classList.add("rewind");
+    window.setTimeout(
+      () => document.body.classList.remove("rewind"),
+      1100
+    );
+  }
+  window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+}
 
 /* Sticky top navigation. Collapses to a compact menu on small screens.
    The logo is 5x and fluid (clamp) — nav grows taller to fit it. */
@@ -17,14 +35,28 @@ const LINKS = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (pathname === "/") {
+      rewindPage();
+    } else {
+      router.push("/");
+      // let the home page land, then rewind there
+      window.setTimeout(rewindPage, 350);
+    }
+  };
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-edge bg-ink/85 backdrop-blur">
       <nav className="flex items-center justify-between gap-4 py-4 pr-4 sm:pr-6">
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-3"
-          aria-label="5IN1 home"
+          onClick={handleLogoClick}
+          className="logo-hover flex shrink-0 items-center gap-3"
+          aria-label="5IN1 home — rewind to top"
         >
           <AliveLogo size="sm" />
           <span className="hidden text-xs whitespace-nowrap text-slate-400 sm:inline">
