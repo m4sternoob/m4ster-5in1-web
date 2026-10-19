@@ -55,14 +55,20 @@ export default function Navbar() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-edge bg-transparent pt-[env(safe-area-inset-top)]">
-      <nav className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6">
+      <nav className="flex flex-row-reverse items-center justify-between gap-4 px-4 py-4 sm:flex-row sm:px-6">
         <Link
           href="/"
           onClick={handleLogoClick}
-          className="logo-hover flex shrink-0 items-center gap-3 pl-6 sm:pl-0"
+          className="logo-hover flex shrink-0 items-center gap-3"
           aria-label="5IN1 home — rewind to top"
         >
-          <AliveLogo size="sm" />
+          {/* Mobile: two-line stack on the right. Desktop: horizontal mark on the left. */}
+          <span className="sm:hidden">
+            <AliveLogo size="sm" stacked />
+          </span>
+          <span className="hidden sm:block">
+            <AliveLogo size="sm" />
+          </span>
           <span className="hidden text-xs whitespace-nowrap text-slate-400 sm:inline">
             Five GAMES - (ALL PLATFORMS 1::1)
           </span>
