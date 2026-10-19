@@ -137,7 +137,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <BackToTop />
         <InstallApp />
         <PwaRegister />
-        {children}
+        <div className="relative z-10 flex min-h-full flex-col">{children}</div>
       </body>
     </html>
   );
