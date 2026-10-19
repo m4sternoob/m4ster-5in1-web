@@ -1,5 +1,5 @@
-import Link from "next/link";
 import AuraBackground from "../components/AuraBackground";
+import BackToGames from "./BackToGames";
 
 /* Shared wrapper for every /play/<game> page: back link, title,
    and the same centered panel the demos use. */
@@ -16,12 +16,7 @@ export default function GameShell({
   return (
     <div className="w-full max-w-2xl text-center">
       <AuraBackground />
-      <Link
-        href="/play"
-        className="btn-alive mb-6 inline-block text-xs font-semibold tracking-widest text-slate-500 uppercase hover:text-arcade"
-      >
-        ← All games
-      </Link>
+      <BackToGames />
       <p className="pop-in mb-2 text-xs font-bold tracking-widest text-arcade uppercase">
         Playable in your browser
       </p>
