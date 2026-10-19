@@ -5,7 +5,7 @@
     "entertainment"
   ],
   "description": "M4ster-5IN1 \u2014 five games, one app. Snake, Connect 4, Memory Match, Tic-Tac-Toe, Number Guessing. Web, Windows, Mac, Android, iOS. Free, offline, no accounts.",
-  "display": "fullscreen",
+  "display": "standalone",
   "icons": [
     {
       "purpose": "any",
