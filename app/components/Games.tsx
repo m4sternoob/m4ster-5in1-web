@@ -1,14 +1,13 @@
 import SectionHeading from "./SectionHeading";
 import Reveal from "./Reveal";
 
-/* Five game cards. Descriptions stick to features that actually ship in the
-   app — nothing invented. */
+/* Five game cards. Descriptions stick to features that actually ship. */
 
 type Game = {
   name: string;
   tagline: string;
   features: string[];
-  icon: string; // emoji-style glyph used as the card's visual anchor
+  glyph: string; // single-letter anchor, styled — no emoji
 };
 
 const GAMES: Game[] = [
@@ -21,7 +20,7 @@ const GAMES: Game[] = [
       "Combo multiplier for chained pickups",
       "Wrap-walls mode and particle effects",
     ],
-    icon: "🐍",
+    glyph: "S",
   },
   {
     name: "Connect 4 vs CPU",
@@ -32,7 +31,7 @@ const GAMES: Game[] = [
       "Win celebration with confetti",
       "Glossy 3D discs",
     ],
-    icon: "🔴",
+    glyph: "4",
   },
   {
     name: "Memory Match",
@@ -43,7 +42,7 @@ const GAMES: Game[] = [
       "Mismatch shake animation",
       "Win celebration",
     ],
-    icon: "🃏",
+    glyph: "M",
   },
   {
     name: "Tic-Tac-Toe vs CPU",
@@ -53,7 +52,7 @@ const GAMES: Game[] = [
       "Animated result banner",
       "Win confetti when you pull off the impossible",
     ],
-    icon: "⭕",
+    glyph: "X",
   },
   {
     name: "Number Guessing",
@@ -64,7 +63,7 @@ const GAMES: Game[] = [
       "Hot-or-cold proximity meter",
       "Win-rate stat so you can track your form",
     ],
-    icon: "🎯",
+    glyph: "#",
   },
 ];
 
@@ -76,15 +75,18 @@ export default function Games() {
           <SectionHeading
             eyebrow="The lineup"
             title="Five games. One app. Zero filler."
-            blurb="Every game runs natively on your Mac — no browser tab, no Electron wrapper, no waiting."
+            blurb="The same five games, one-to-one identical on web, Windows, Mac, Android, and iOS."
           />
         </Reveal>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {GAMES.map((g, i) => (
             <Reveal key={g.name} delay={i * 90} className="h-full">
               <article className="card-alive flex h-full flex-col rounded-2xl border border-edge bg-panel p-6">
-                <div className="float-slow mb-4 inline-block text-4xl" aria-hidden="true">
-                  {g.icon}
+                <div
+                  className="float-slow mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-arcade/40 bg-arcade/10 text-2xl font-extrabold text-arcade"
+                  aria-hidden="true"
+                >
+                  {g.glyph}
                 </div>
                 <h3 className="text-lg font-bold text-white">{g.name}</h3>
                 <p className="mt-1 text-sm text-slate-400">{g.tagline}</p>
@@ -105,17 +107,17 @@ export default function Games() {
           <Reveal delay={GAMES.length * 90} className="h-full">
             <a
               href="#download"
-              className="card-alive flex h-full flex-col items-center justify-center rounded-2xl border border-dashed border-edge p-6 text-center hover:border-arcade hover:bg-panel"
+              className="card-alive flex h-full min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-arcade/40 bg-panel/60 p-6 text-center transition-colors hover:border-arcade"
             >
-              <div className="float-slow text-4xl" aria-hidden="true">
-                🍎
-              </div>
-              <p className="mt-4 text-lg font-bold text-white">
-                Get 5IN1 for Mac
-              </p>
-              <p className="mt-1 text-sm text-slate-400">
-                Free. macOS 14+ on Apple Silicon.
-              </p>
+              <span className="text-lg font-bold text-arcade">
+                Get all five
+              </span>
+              <span className="mt-2 text-sm text-slate-400">
+                Free on every platform. Pick yours below.
+              </span>
+              <span className="btn-alive mt-5 rounded-xl bg-arcade px-6 py-2.5 text-sm font-bold text-ink">
+                Download
+              </span>
             </a>
           </Reveal>
         </div>

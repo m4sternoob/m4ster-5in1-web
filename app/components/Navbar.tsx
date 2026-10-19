@@ -23,7 +23,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-2" aria-label="5IN1 home">
           <AliveLogo size="sm" />
           <span className="hidden text-xs text-slate-400 sm:inline">
-            five games, one native macOS app
+            five games, every platform
           </span>
         </Link>
 

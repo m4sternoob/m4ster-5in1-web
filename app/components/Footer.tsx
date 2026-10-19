@@ -11,7 +11,7 @@ export default function Footer() {
             5<span className="text-arcade">IN</span>1
           </p>
           <p className="mt-1 text-sm text-slate-400">
-            Five games, one native macOS app. Built by m4sternoob.
+            Five games, every platform. Built by m4sternoob.
           </p>
         </div>
         <div className="flex flex-col items-center gap-2 text-sm sm:items-end">
@@ -27,12 +27,12 @@ export default function Footer() {
             rel="noopener noreferrer"
             className="text-slate-300 transition-colors hover:text-arcade"
           >
-            GitHub — m4sternoob/m4ster-5in1
+            GitHub — m4sternoob/m4ster-5in1-web
           </a>
         </div>
       </div>
-      <p className="border-t border-edge px-4 py-4 text-center text-xs text-slate-500">
-        Free and open-source. Built with SwiftUI + SpriteKit.
+      <p className="border-t border-edge px-4 py-4 text-center text-xs text-slate-400">
+        Free and open-source. One codebase — web, Windows, macOS, Android, iOS.
       </p>
     </footer>
   );

@@ -1,4 +1,5 @@
 import SectionHeading from "./SectionHeading";
+import Reveal from "./Reveal";
 import {
   RELEASES_URL,
   ANDROID_RELEASES_URL,
@@ -6,101 +7,103 @@ import {
   SYS_REQUIREMENTS,
 } from "../data/site";
 
-/* Download section: Mac + Android + Windows releases, honest system
-   requirements, and a note about the ad-hoc signature so users know what
-   to expect. */
+/* Download section: one card per platform, all builds from one codebase. */
+
+const PLATFORMS = [
+  {
+    name: "Windows",
+    desc: "Native .exe installer via Tauri — fast, tiny, offline.",
+    href: WINDOWS_RELEASES_URL,
+    cta: "Windows releases",
+  },
+  {
+    name: "macOS",
+    desc: "Native .dmg via Tauri — Apple Silicon and Intel.",
+    href: RELEASES_URL,
+    cta: "Mac releases",
+  },
+  {
+    name: "Android",
+    desc: "Native .apk via Capacitor — offline, no accounts, no ads.",
+    href: ANDROID_RELEASES_URL,
+    cta: "Android releases",
+  },
+];
 
 export default function Download() {
   return (
     <section
       id="download"
-      className="scroll-mt-20 border-y border-edge bg-panel/50 px-4 py-20 sm:px-6 sm:py-28"
+      className="relative scroll-mt-20 overflow-hidden border-y border-edge bg-panel/50 px-4 py-20 sm:px-6 sm:py-28"
     >
-      <div className="mx-auto max-w-4xl text-center">
-        <SectionHeading
-          eyebrow="Get the app"
-          title="Download 5IN1"
-          blurb="Pick your platform below. All builds are free, offline, and ad-free."
-        />
+      {/* ambient aura behind the cards */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        aria-hidden="true"
+      >
+        <div className="aura-blob aura-a absolute top-1/4 left-1/4" />
+        <div className="aura-blob aura-b absolute right-1/4 bottom-1/4" />
+      </div>
+      <div className="relative mx-auto max-w-4xl text-center">
+        <Reveal>
+          <SectionHeading
+            eyebrow="Get the app"
+            title="Download 5IN1"
+            blurb="Pick your platform below. All builds are free, offline, and ad-free — same app, every screen."
+          />
+        </Reveal>
 
         <div className="mx-auto -mt-4 grid max-w-5xl gap-4 sm:grid-cols-3">
-          {/* macOS */}
-          <div className="rounded-2xl border border-edge bg-panel px-6 py-8">
-            <h3 className="text-lg font-bold text-white">macOS</h3>
-            <p className="mt-1 text-sm text-slate-400">
-              v3.2.1 is built and in playtesting — the public release lands once
-              testing passes.
-            </p>
-            <a
-              href={RELEASES_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-alive mt-5 inline-block rounded-xl bg-arcade px-8 py-3 text-base font-bold text-ink shadow-lg shadow-cyan-500/20 hover:bg-cyan-300"
-            >
-              Mac releases
-            </a>
-          </div>
-
-          {/* Android */}
-          <div className="rounded-2xl border border-edge bg-panel px-6 py-8">
-            <h3 className="text-lg font-bold text-white">Android</h3>
-            <p className="mt-1 text-sm text-slate-400">
-              v1.3.0 is out now — two variants, with hints and no hints. Fully
-              offline, no ads, no accounts.
-            </p>
-            <a
-              href={ANDROID_RELEASES_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-alive mt-5 inline-block rounded-xl bg-arcade px-8 py-3 text-base font-bold text-ink shadow-lg shadow-cyan-500/20 hover:bg-cyan-300"
-            >
-              Android releases
-            </a>
-          </div>
-
-          {/* Windows */}
-          <div className="rounded-2xl border border-edge bg-panel px-6 py-8">
-            <h3 className="text-lg font-bold text-white">Windows</h3>
-            <p className="mt-1 text-sm text-slate-400">
-              5IN1 installer (.exe) — free, offline, no accounts.
-            </p>
-            <a
-              href={WINDOWS_RELEASES_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-alive mt-5 inline-block rounded-xl bg-arcade px-8 py-3 text-base font-bold text-ink shadow-lg shadow-cyan-500/20 hover:bg-cyan-300"
-            >
-              Windows releases
-            </a>
-          </div>
+          {PLATFORMS.map((p, i) => (
+            <Reveal key={p.name} delay={i * 100} className="h-full">
+              <div className="card-alive flex h-full flex-col rounded-2xl border border-edge bg-panel px-6 py-8">
+                <h3 className="text-lg font-bold text-white">{p.name}</h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-300">
+                  {p.desc}
+                </p>
+                <a
+                  href={p.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-alive mt-6 inline-block rounded-xl bg-arcade px-8 py-3 text-base font-bold text-ink shadow-lg shadow-cyan-500/20 hover:bg-cyan-300"
+                >
+                  {p.cta}
+                </a>
+              </div>
+            </Reveal>
+          ))}
         </div>
 
-        <dl className="mx-auto mt-12 grid max-w-3xl gap-4 text-left sm:grid-cols-3">
-          {[
-            { term: "Requires", detail: SYS_REQUIREMENTS.os },
-            { term: "Chip", detail: SYS_REQUIREMENTS.chip },
-            { term: "Signing", detail: SYS_REQUIREMENTS.signing },
-          ].map((r) => (
-            <div
-              key={r.term}
-              className="rounded-xl border border-edge bg-panel px-5 py-4"
-            >
-              <dt className="text-xs font-semibold tracking-widest text-slate-400 uppercase">
-                {r.term}
-              </dt>
-              <dd className="mt-1 text-sm font-semibold text-white">
-                {r.detail}
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <Reveal delay={320}>
+          <dl className="mx-auto mt-12 grid max-w-3xl gap-4 text-left sm:grid-cols-3">
+            {[
+              { term: "Requires", detail: SYS_REQUIREMENTS.os },
+              { term: "Chip", detail: SYS_REQUIREMENTS.chip },
+              { term: "Signing", detail: SYS_REQUIREMENTS.signing },
+            ].map((r) => (
+              <div
+                key={r.term}
+                className="card-alive rounded-xl border border-edge bg-panel px-5 py-4"
+              >
+                <dt className="text-xs font-semibold tracking-widest text-slate-400 uppercase">
+                  {r.term}
+                </dt>
+                <dd className="mt-1 text-sm font-semibold text-slate-100">
+                  {r.detail}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </Reveal>
 
-        <p className="mx-auto mt-8 max-w-2xl text-sm text-slate-400">
-          The build is <strong className="text-slate-200">ad-hoc signed</strong>
-          , not notarized by Apple. On first launch, macOS may warn you —
-          right-click the app and choose <em>Open</em> once. No public Mac
-          release is published yet — v3.2.1 is still in playtesting.
-        </p>
+        <Reveal delay={420}>
+          <p className="mx-auto mt-8 max-w-2xl text-sm leading-relaxed text-slate-400">
+            Every release is built from the same codebase —{" "}
+            <strong className="text-slate-200">change once, push everywhere</strong>.
+            Web deploys automatically, desktop and mobile builds run on every
+            version tag.
+          </p>
+        </Reveal>
       </div>
     </section>
   );
