@@ -48,6 +48,19 @@ body {
   will-change: transform, filter;
 }
 
+/* Logo hover kick — lives on the wrapper span so it never fights the
+   breathing animation on the svg itself. Glows hotter + lifts slightly. */
+.logo-hover {
+  display: inline-block;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1.4, 0.36, 1),
+    filter 0.35s ease;
+}
+.logo-hover:hover {
+  transform: scale(1.1);
+  filter: brightness(1.35) drop-shadow(0 0 18px rgb(34 211 238 / 0.9));
+}
+
 /* Shimmering gradient text for hero words. */
 @keyframes gradient-pan {
   0%,
@@ -664,12 +677,6 @@ body.rgb-breathe .rgb-sep {
 
 /* Hide all RGB separators */
 body.no-rgb .rgb-sep {
-  display: none;
-}
-
-/* Customize toolbar: kill the animated background layers */
-body.no-bg-anim .tile-grid-layer,
-body.no-bg-anim .aura-layer {
   display: none;
 }
 
