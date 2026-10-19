@@ -5,8 +5,9 @@ import BackToGames from "../BackToGames";
 import TicTacToeDemo from "../TicTacToeDemo";
 
 export const metadata: Metadata = {
-  title: "Tic-Tac-Toe — 5IN1 web play",
-  description: "Play Tic-Tac-Toe in your browser against the minimax CPU.",
+  title: "Tic-Tac-Toe — M4STER-5IN1",
+  description:
+    "Play Tic-Tac-Toe free in your browser against an unbeatable minimax CPU. No download, no account.",
 };
 
 /* The existing demo keeps its own header, so this page just frames it. */

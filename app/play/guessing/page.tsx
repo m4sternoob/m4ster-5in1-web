@@ -5,8 +5,9 @@ import BackToGames from "../BackToGames";
 import GuessingDemo from "../GuessingDemo";
 
 export const metadata: Metadata = {
-  title: "Number Guessing — 5IN1 web play",
-  description: "Play the Number Guessing Game in your browser.",
+  title: "Number Guessing — M4STER-5IN1",
+  description:
+    "Play the Number Guessing Game free in your browser — pick a difficulty, beat the attempts limit, track your streak. No download, no account.",
 };
 
 /* The existing demo keeps its own header, so this page just frames it. */

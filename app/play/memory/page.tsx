@@ -5,8 +5,9 @@ import GameShell from "../GameShell";
 import MemoryGame from "./MemoryGame";
 
 export const metadata: Metadata = {
-  title: "Memory Match — 5IN1 web play",
-  description: "Play Memory Match in your browser — flip pairs, clear the board.",
+  title: "Memory Match — M4STER-5IN1",
+  description:
+    "Play Memory Match free in your browser — flip cards with real 3D animation, find all pairs in as few moves as possible. No download, no account.",
 };
 
 export default function Page() {

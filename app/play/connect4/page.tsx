@@ -5,8 +5,9 @@ import GameShell from "../GameShell";
 import Connect4Game from "./Connect4Game";
 
 export const metadata: Metadata = {
-  title: "Connect 4 — 5IN1 web play",
-  description: "Play Connect 4 in your browser against the CPU.",
+  title: "Connect 4 — M4STER-5IN1",
+  description:
+    "Play Connect 4 free in your browser against the CPU — drop discs, line up four, win. No download, no account.",
 };
 
 export default function Page() {

@@ -5,9 +5,9 @@ import Footer from "../components/Footer";
 import Reveal from "../components/Reveal";
 
 export const metadata: Metadata = {
-  title: "Play the games — 5IN1",
+  title: "Play the Games — M4STER-5IN1",
   description:
-    "Play all 5IN1 games right in your browser — Snake, Connect 4, Memory Match, Tic-Tac-Toe, and Number Guessing.",
+    "Play all five M4STER-5IN1 games free in your browser — Snake, Connect 4, Memory Match, Tic-Tac-Toe, and Number Guessing. No download, no account.",
 };
 
 /* /play hub: every 5IN1 game playable in the browser. */

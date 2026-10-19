@@ -5,8 +5,9 @@ import GameShell from "../GameShell";
 import SnakeGame from "./SnakeGame";
 
 export const metadata: Metadata = {
-  title: "Snake — 5IN1 web play",
-  description: "Play Snake in your browser — eat dots, chase golden food.",
+  title: "Snake — M4STER-5IN1",
+  description:
+    "Play Snake free in your browser — eat dots, chain 3 in a row for golden bonus food (5x points), chase the high score. No download, no account.",
 };
 
 export default function Page() {
