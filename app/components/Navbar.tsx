@@ -59,7 +59,7 @@ export default function Navbar() {
         <Link
           href="/"
           onClick={handleLogoClick}
-          className="logo-hover flex shrink-0 items-center gap-3"
+          className="logo-hover flex shrink-0 items-center gap-3 pl-6 sm:pl-0"
           aria-label="5IN1 home — rewind to top"
         >
           <AliveLogo size="sm" />
