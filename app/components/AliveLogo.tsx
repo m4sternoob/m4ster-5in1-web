@@ -1,12 +1,13 @@
-/* The 5IN1 brand mark — a designed vector monogram, alive.
-   One continuous flowing gesture: 5 → I → N → 1, thick rounded strokes
-   (9px) with neon glow, in the MT-logo style. Custom vector paths, never
-   plain text. It breathes forever via .logo-alive.
+/* The M4STER-5IN1 brand mark — a designed vector monogram, alive.
+   One continuous neon style: M4STER- in flowing script-like strokes,
+   then the 5IN1 icon (5 → I → N → 1) with breathing room between letters.
+   Thick rounded strokes (9px) with neon glow, in the MT-logo style.
+   Custom vector paths, never plain text. It breathes forever via .logo-alive.
    Sizes are fluid via clamp() — bold on desktop, restrained on phones
    so no layout breaks. */
 
 const LOGO_PATH =
-  "M 32 104 C 48 111, 66 106, 71 93 C 76 81, 66 71, 50 68 C 36 65, 27 59, 25 49 L 23 37 C 22.5 31, 25 28, 30 28 L 76 28 C 88 27, 98 29, 104 32 L 104 108 C 108 110, 111 110, 114 108 L 114 30 L 172 108 L 172 30 C 181 31, 188 36, 193 43 L 216 30 L 216 108 C 216 114, 209 117, 199 114";
+  "M 26 108 L 26 34 C 34 46, 42 58, 50 70 C 58 58, 66 46, 74 34 L 74 108 M 130 34 L 130 108 M 130 40 L 100 82 L 144 82 M 220 46 C 216 36, 206 31, 194 33 C 180 36, 178 47, 188 53 C 200 60, 216 66, 215 82 C 214 97, 200 107, 186 105 C 176 103, 169 99, 167 93 M 245 32 L 283 32 M 264 32 L 264 108 M 349 34 L 311 34 L 311 108 L 347 108 M 311 70 L 337 70 M 379 108 L 379 32 L 405 32 C 419 32, 419 64, 405 64 L 379 64 M 401 64 L 421 108 M 447 70 L 469 70 M 504 104 C 520 111, 538 106, 543 93 C 548 81, 538 71, 522 68 C 508 65, 499 59, 497 49 L 495 37 C 494.5 31, 497 28, 502 28 L 548 28 M 585 32 L 585 108 M 625 108 L 625 30 L 685 108 L 685 30 C 694 31, 701 36, 706 43 L 725 30 L 725 108 C 725 114, 718 117, 708 114";
 
 export default function AliveLogo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   const cls =
@@ -17,10 +18,10 @@ export default function AliveLogo({ size = "md" }: { size?: "sm" | "md" | "lg" }
         : "h-[clamp(2rem,1.25rem+4vw,5.625rem)]";
   return (
     <svg
-      viewBox="0 0 252 140"
+      viewBox="0 0 760 140"
       className={`logo-alive neon-logo w-auto ${cls}`}
       role="img"
-      aria-label="5IN1"
+      aria-label="M4STER-5IN1"
     >
       <defs>
         <linearGradient id="flow51" x1="0" y1="0" x2="1" y2="0">
