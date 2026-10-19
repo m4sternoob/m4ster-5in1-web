@@ -921,3 +921,9 @@ body.no-rgb .rgb-sep {
 @media (prefers-reduced-motion: reduce) {
   .score-pop, .streak-glow, .gameover-title { animation-duration: 0.01ms !important; }
 }
+
+/* Customize toolbar: hide animated background layers when disabled. */
+body.no-bg-anim .tile-grid-layer,
+body.no-bg-anim .aura-layer {
+  display: none !important;
+}

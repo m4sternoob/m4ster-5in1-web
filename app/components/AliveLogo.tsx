@@ -32,17 +32,22 @@ export default function AliveLogo({ size = "md" }: { size?: "sm" | "md" | "lg" }
   /* lg is the hero mark: ~2.5x the navbar logo, width-based (never wider
      than the viewport) so it always centers instead of overflowing;
      sm is the compact navbar mark; md is the footer mark. */
+  /* Sizes read the Customize toolbar CSS vars so the sliders work:
+     --logo-nav-scale (sm) and --logo-hero-scale (lg), 1 = 100%. */
   const cls =
+    size === "lg" ? "h-auto" : size === "sm" ? "w-auto" : "h-[clamp(2rem,1.25rem+4vw,5.625rem)] w-auto";
+  const varStyle =
     size === "lg"
-      ? "h-auto w-[min(72vw,84rem)]"
+      ? { width: "calc(min(72vw, 84rem) * var(--logo-hero-scale, 1))" }
       : size === "sm"
-        ? "h-[clamp(1.125rem,0.875rem+1.5vw,2.5rem)] w-auto"
-        : "h-[clamp(2rem,1.25rem+4vw,5.625rem)] w-auto";
+        ? { height: "calc(clamp(1.125rem, 0.875rem + 1.5vw, 2.5rem) * var(--logo-nav-scale, 1))" }
+        : undefined;
   return (
     <span className="logo-hover mx-auto inline-block max-w-full">
       <svg
         viewBox="0 0 760 140"
         className={`logo-alive neon-logo ${cls}`}
+        style={varStyle}
         role="img"
         aria-label="M4STER-5IN1"
       >
@@ -59,7 +64,7 @@ export default function AliveLogo({ size = "md" }: { size?: "sm" | "md" | "lg" }
           </filter>
         </defs>
         {/* Glow halo behind everything */}
-        <path d={LOGO_PATH} {...STROKE} filter="url(#halo51)" opacity={0.9} />
+        <path d={LOGO_PATH} {...STROKE} filter="url(#halo51)" style={{ opacity: "calc(0.9 * var(--glow, 1))" }} />
         {/* Black sticker outline under every letter */}
         <path d={LOGO_PATH} {...OUTLINE} />
         {/* Solid crisp neon core on top */}

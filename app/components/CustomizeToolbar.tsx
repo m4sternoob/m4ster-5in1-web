@@ -20,7 +20,7 @@ type Settings = {
 
 const DEFAULTS: Settings = {
   navLogo: 1,
-  heroLogo: 2,
+  heroLogo: 1,
   glow: 1,
   bgAnim: true,
   rgb: true,
