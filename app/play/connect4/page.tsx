@@ -14,7 +14,7 @@ export default function Page() {
   return (
     <div className="flex min-h-full flex-col">
       <Navbar />
-      <main className="flex flex-1 items-center justify-center px-0 pt-24 pb-10 sm:px-6 sm:pt-28 sm:pb-16">
+      <main className="flex flex-1 items-center justify-center px-0 pt-32 pb-10 sm:px-6 sm:pt-28 sm:pb-16">
         <GameShell
           title="Connect 4"
           tagline="Drop discs, line up four — the CPU blocks and takes wins on Hard."
