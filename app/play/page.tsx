@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import AuraBackground from "../components/AuraBackground";
 import Reveal from "../components/Reveal";
 
 export const metadata: Metadata = {
@@ -50,7 +49,6 @@ export default function PlayPage() {
   return (
     <div className="flex min-h-full flex-col">
       <Navbar />
-      <AuraBackground />
       <main className="flex flex-1 items-center justify-center px-4 pt-28 pb-16 sm:px-6">
         <div className="w-full max-w-3xl text-center">
           <Reveal delay={0}>
@@ -101,7 +99,7 @@ export default function PlayPage() {
             <p className="mt-8 text-xs text-slate-500">
               Want the full experience?{" "}
               <Link href="/" className="text-arcade hover:underline">
-                Get the 5IN1 Mac app
+                Get the 5IN1 app
               </Link>
               .
             </p>
