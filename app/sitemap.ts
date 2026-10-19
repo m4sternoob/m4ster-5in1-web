@@ -2,7 +2,7 @@ export const dynamic = "force-static";
 
 import type { MetadataRoute } from "next";
 
-const SITE_URL = "https://m4ster-5in1.pages.dev";
+const SITE_URL = "https://m4ster-5in1.vercel.app";
 
 const PAGES = [
   { path: "/", priority: 1.0, changeFrequency: "daily" as const },

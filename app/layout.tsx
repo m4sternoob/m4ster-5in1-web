@@ -17,26 +17,52 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const SITE_URL = "https://m4ster-5in1.pages.dev";
+const SITE_URL = "https://m4ster-5in1.vercel.app";
 const SITE_TITLE =
-  "M4STER-5IN1 — Five Games, One App | Web, Windows, Mac, Android, iOS";
+  "5IN1 — 9 Games in One App | Play Free Browser Games";
 const SITE_DESC =
-  "Play Snake, Connect 4, Memory Match, Tic-Tac-Toe, and Number Guessing. One codebase, identical on every platform. Free, offline, no accounts.";
+  "Play 9 free browser games in one app — Snake, 2048, Memory Match, Minesweeper, Tic-Tac-Toe, Connect 4, Number Guessing, Snakes & Ladders and more. No downloads, no signup, 100% free.";
 const SITE_KEYWORDS = [
-  "m4ster 5in1",
-  "5in1 games",
-  "browser games",
-  "free online games",
-  "snake game",
-  "connect 4",
-  "memory match",
-  "tic tac toe",
-  "number guessing",
   "free browser games",
+  "play snake online",
+  "2048 game",
+  "memory match game",
+  "minesweeper online",
+  "tic tac toe online",
+  "multi-game app",
+  "free online games",
+  "5in1 games",
+  "m4ster 5in1",
+  "connect 4 online",
+  "number guessing game",
 ];
+
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "5IN1",
+  alternateName: "m4ster 5IN1",
+  url: SITE_URL,
+  description: SITE_DESC,
+  applicationCategory: "GameApplication",
+  operatingSystem: "Any",
+  browserRequirements: "Requires JavaScript",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
+  author: {
+    "@type": "Person",
+    name: "m4sternoob",
+  },
+  inLanguage: "en",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  authors: [{ name: "m4sternoob" }],
+  creator: "m4sternoob",
   title: SITE_TITLE,
   description: SITE_DESC,
   keywords: SITE_KEYWORDS,
@@ -80,6 +106,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+        />
         <AuraBackground />
         <TileGrid />
         <OrbCursor />

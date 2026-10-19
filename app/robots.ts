@@ -8,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://m4ster-5in1.pages.dev/sitemap.xml",
+    sitemap: "https://m4ster-5in1.vercel.app/sitemap.xml",
   };
 }
