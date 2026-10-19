@@ -38,7 +38,9 @@ export default function AliveLogo({ size = "md" }: { size?: "sm" | "md" | "lg" }
     size === "lg" ? "h-auto" : size === "sm" ? "w-auto" : "h-[clamp(2rem,1.25rem+4vw,5.625rem)] w-auto";
   const varStyle =
     size === "lg"
-      ? { width: "calc(min(72vw, 84rem) * var(--logo-hero-scale, 1))" }
+      ? { width: "min(72vw, 56rem)" } /* base fits the hero's max-w-4xl parent;
+        live scaling is via transform: scale(var(--logo-hero-scale)) on the
+        Hero link wrapper (width scaling is clamped by the parent) */
       : size === "sm"
         ? { height: "calc(clamp(1.125rem, 0.875rem + 1.5vw, 2.5rem) * var(--logo-nav-scale, 1))" }
         : undefined;

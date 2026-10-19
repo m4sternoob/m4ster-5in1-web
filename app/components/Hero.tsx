@@ -90,6 +90,7 @@ export default function Hero() {
             href="/play"
             aria-label="Play games"
             className="block cursor-pointer"
+            style={{ transform: "scale(var(--logo-hero-scale, 1))" }}
           >
             <AliveLogo size="lg" />
           </Link>

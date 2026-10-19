@@ -645,9 +645,20 @@ body {
     #ff2d78
   );
   background-size: 200% 100%;
-  animation: rgb-flow var(--rgb-speed) linear infinite;
+  /* Longhand (not shorthand): var() changes to --rgb-speed re-resolve
+     reliably without dropping the animation. */
+  animation-name: rgb-flow;
+  animation-duration: var(--rgb-speed, 6s);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
   border-radius: 2px;
   opacity: 0.85;
+}
+
+/* Background animation toggle: hide the living background layers. */
+body.no-bg-anim .tile-grid-layer,
+body.no-bg-anim .aura-layer {
+  display: none !important;
 }
 
 @keyframes rgb-flow {

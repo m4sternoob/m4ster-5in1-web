@@ -109,14 +109,18 @@ export default function CustomizeToolbar() {
   }, []);
 
   const update = (patch: Partial<Settings>) => {
-    const next = { ...s, ...patch };
-    setS(next);
-    apply(next);
-    try {
-      localStorage.setItem(KEY, JSON.stringify(next));
-    } catch {
-      /* storage unavailable — settings still apply for this session */
-    }
+    /* Functional update: the save always uses the latest state, never a
+       stale render closure — guarantees localStorage stays in sync. */
+    setS((prev) => {
+      const next = { ...prev, ...patch };
+      apply(next);
+      try {
+        localStorage.setItem(KEY, JSON.stringify(next));
+      } catch {
+        /* storage unavailable — settings still apply for this session */
+      }
+      return next;
+    });
   };
 
   const reset = () => {
