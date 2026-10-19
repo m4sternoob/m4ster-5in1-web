@@ -43,12 +43,19 @@ export default function FullscreenButton() {
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
 
-  const toggle = async () => {
+  const toggle = () => {
     try {
       if (document.fullscreenElement) {
-        await document.exitFullscreen();
+        document.exitFullscreen();
       } else {
-        await document.documentElement.requestFullscreen();
+        // SYNCHRONOUS — no await before the request: browsers only grant
+        // fullscreen inside the click's call stack.
+        if (window.matchMedia("(display-mode: standalone)").matches) return; // already fullscreen as PWA
+        const el = document.documentElement as HTMLElement & {
+          webkitRequestFullscreen?: () => void;
+        };
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
       }
     } catch {
       /* Fullscreen can be blocked (e.g. inside some iframes) — stay put. */
