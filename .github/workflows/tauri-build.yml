@@ -21,3 +21,5 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: '5IN1 ${{ github.ref_name }}'
           releaseDraft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
