@@ -377,13 +377,13 @@ export default function Connect4Game() {
 
       <div className="mt-2 flex items-center justify-center gap-6 text-sm text-slate-400">
         <span>
-          You <strong className="text-white">{tally.you}</strong>
+          You <strong key={tally.you} className="score-pop text-white">{tally.you}</strong>
         </span>
         <span>
-          Draws <strong className="text-white">{tally.draws}</strong>
+          Draws <strong key={tally.draws} className="score-pop text-white">{tally.draws}</strong>
         </span>
         <span>
-          CPU <strong className="text-white">{tally.cpu}</strong>
+          CPU <strong key={tally.cpu} className="score-pop text-white">{tally.cpu}</strong>
         </span>
       </div>
 

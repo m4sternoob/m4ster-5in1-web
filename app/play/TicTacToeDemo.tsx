@@ -1,46 +1,41 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 
-/* Playable Tic-Tac-Toe demo: you (X) against an unbeatable minimax CPU (O).
-   This is a small web taste of the same game inside the 5IN1 Mac app. */
+/* Tic-Tac-Toe vs minimax CPU — X draws in with stroke animation,
+   O draws as an arc, win line strikes through, cells bounce on press.
+   60fps: SVG stroke-dashoffset + GPU transforms only. */
 
 type Cell = "X" | "O" | null;
 type Outcome = "X" | "O" | "draw" | null;
 
-/** All eight winning lines on a 3x3 board. */
 const LINES = [
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8],
-  [2, 4, 6],
+  [0, 1, 2], [3, 4, 5], [6, 7, 8],
+  [0, 3, 6], [1, 4, 7], [2, 5, 8],
+  [0, 4, 8], [2, 4, 6],
 ] as const;
 
-/** Returns the game result for a board, or null while it is still in play. */
 function outcomeOf(board: Cell[]): Outcome {
   for (const [a, b, c] of LINES) {
-    if (board[a] !== null && board[a] === board[b] && board[a] === board[c]) {
-      return board[a];
-    }
+    if (board[a] !== null && board[a] === board[b] && board[a] === board[c]) return board[a];
   }
   return board.every((cell) => cell !== null) ? "draw" : null;
 }
 
-/**
- * Minimax search scored from the CPU's (O) perspective, with depth
- * preference so the CPU wins fast and delays defeat. X is the minimizer.
- */
+function winLineOf(board: Cell[]): readonly number[] | null {
+  for (const line of LINES) {
+    const [a, b, c] = line;
+    if (board[a] !== null && board[a] === board[b] && board[a] === board[c]) return line;
+  }
+  return null;
+}
+
 function minimax(board: Cell[], cpuTurn: boolean, depth: number): number {
   const result = outcomeOf(board);
   if (result === "O") return 10 - depth;
   if (result === "X") return depth - 10;
   if (result === "draw") return 0;
-
   let best = cpuTurn ? -Infinity : Infinity;
   for (let i = 0; i < 9; i++) {
     if (board[i] === null) {
@@ -53,7 +48,6 @@ function minimax(board: Cell[], cpuTurn: boolean, depth: number): number {
   return best;
 }
 
-/** Picks the CPU's move: the empty cell with the highest minimax score. */
 function pickCpuMove(board: Cell[]): number {
   let bestScore = -Infinity;
   let bestMove = -1;
@@ -62,10 +56,7 @@ function pickCpuMove(board: Cell[]): number {
       board[i] = "O";
       const score = minimax(board, false, 0);
       board[i] = null;
-      if (score > bestScore) {
-        bestScore = score;
-        bestMove = i;
-      }
+      if (score > bestScore) { bestScore = score; bestMove = i; }
     }
   }
   return bestMove;
@@ -73,29 +64,47 @@ function pickCpuMove(board: Cell[]): number {
 
 const emptyBoard = (): Cell[] => Array<Cell>(9).fill(null);
 
+/* SVG mark that draws itself in. */
+function Mark({ cell, fresh }: { cell: Cell; fresh: boolean }) {
+  if (cell === "X") {
+    return (
+      <svg viewBox="0 0 40 40" className={`ttt-mark ${fresh ? "ttt-draw" : ""}`} aria-hidden="true">
+        <line x1="10" y1="10" x2="30" y2="30" stroke="#22d3ee" strokeWidth="5" strokeLinecap="round" />
+        <line x1="30" y1="10" x2="10" y2="30" stroke="#22d3ee" strokeWidth="5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (cell === "O") {
+    return (
+      <svg viewBox="0 0 40 40" className={`ttt-mark ${fresh ? "ttt-draw" : ""}`} aria-hidden="true">
+        <circle cx="20" cy="20" r="12" fill="none" stroke="#fb7185" strokeWidth="5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  return null;
+}
+
 export default function TicTacToeDemo() {
   const [board, setBoard] = useState<Cell[]>(emptyBoard);
   const [thinking, setThinking] = useState(false);
   const [tally, setTally] = useState({ you: 0, draws: 0, cpu: 0 });
-  // Guards the score so a finished game is tallied exactly once.
+  const [freshIdx, setFreshIdx] = useState<number | null>(null);
   const countedRef = useRef(false);
 
   const result = outcomeOf(board);
+  const winLine = result && result !== "draw" ? winLineOf(board) : null;
 
-  // The CPU answers each player move after a short beat so the game
-  // feels like a turn, not an instant calculation.
   useEffect(() => {
     if (result !== null || thinking) return;
     const xCount = board.filter((c) => c === "X").length;
     const oCount = board.filter((c) => c === "O").length;
-    if (xCount <= oCount) return; // still the player's turn
-
+    if (xCount <= oCount) return;
     setThinking(true);
     const timer = setTimeout(() => {
       setBoard((prev) => {
         const next = [...prev];
         const move = pickCpuMove(next);
-        if (move >= 0) next[move] = "O";
+        if (move >= 0) { next[move] = "O"; setFreshIdx(move); }
         return next;
       });
       setThinking(false);
@@ -103,7 +112,6 @@ export default function TicTacToeDemo() {
     return () => clearTimeout(timer);
   }, [board, result, thinking]);
 
-  // Tally the finished game once.
   useEffect(() => {
     if (result === null || countedRef.current) return;
     countedRef.current = true;
@@ -116,6 +124,7 @@ export default function TicTacToeDemo() {
 
   function play(index: number) {
     if (result !== null || thinking || board[index] !== null) return;
+    setFreshIdx(index);
     setBoard((prev) => {
       const next = [...prev];
       next[index] = "X";
@@ -127,85 +136,108 @@ export default function TicTacToeDemo() {
     countedRef.current = false;
     setThinking(false);
     setBoard(emptyBoard());
+    setFreshIdx(null);
   }
 
   const status =
-    result === "X"
-      ? "You win — the impossible happened."
-      : result === "O"
-        ? "CPU wins. It plays perfectly, so a draw is your best shot."
-        : result === "draw"
-          ? "Draw. Against perfect play, that's a victory."
-          : thinking
-            ? "CPU is thinking…"
-            : "Your move — you're X.";
+    result === "X" ? "You win — the impossible happened."
+    : result === "O" ? "CPU wins. It plays perfectly, so a draw is your best shot."
+    : result === "draw" ? "Draw. Against perfect play, that's a victory."
+    : thinking ? "CPU is thinking…"
+    : "Your move — you're X.";
+
+  // Win line geometry in cell units (0..3).
+  const lineGeom = winLine ? (() => {
+    const [a, b] = [winLine[0], winLine[2]];
+    const ax = (a % 3) + 0.5, ay = Math.floor(a / 3) + 0.5;
+    const bx = (b % 3) + 0.5, by = Math.floor(b / 3) + 0.5;
+    return { x1: ax, y1: ay, x2: bx, y2: by };
+  })() : null;
 
   return (
     <div className="w-full max-w-md text-center">
-      <p className="mb-2 text-xs font-bold tracking-widest text-arcade uppercase">
+      <p className="pop-in mb-2 text-xs font-bold tracking-widest text-arcade uppercase" style={{ "--pop-delay": "40ms" } as CSSProperties}>
         Playable demo
       </p>
-      <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+      <h1 className="pop-in text-3xl font-extrabold tracking-tight text-white sm:text-4xl" style={{ "--pop-delay": "100ms" } as CSSProperties}>
         Tic-Tac-Toe vs CPU
       </h1>
-      <p className="mt-3 text-sm text-slate-400">
-        The same minimax opponent from the 5IN1 Mac app — it never plays a
-        losing move.
+      <p className="pop-in mt-3 text-sm text-slate-400" style={{ "--pop-delay": "160ms" } as CSSProperties}>
+        An unbeatable minimax opponent — it never plays a losing move.
       </p>
 
-      <div
-        className="mx-auto mt-8 grid w-64 grid-cols-3 gap-2 sm:w-72"
-        role="grid"
-        aria-label="Tic-Tac-Toe board"
-      >
-        {board.map((cell, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => play(i)}
-            disabled={cell !== null || result !== null || thinking}
-            aria-label={`Cell ${i + 1}${cell ? `, ${cell}` : ""}`}
-            className="flex aspect-square items-center justify-center rounded-xl border border-edge bg-panel text-4xl font-extrabold transition-colors hover:border-arcade-dim disabled:cursor-default disabled:hover:border-edge"
-          >
-            <span className={cell === "X" ? "text-arcade" : "text-rose-400"}>
-              {cell}
-            </span>
-          </button>
-        ))}
+      <div className="pop-in relative mx-auto mt-8 w-64 sm:w-72" style={{ "--pop-delay": "220ms" } as CSSProperties}>
+        <div className="grid grid-cols-3 gap-2" role="grid" aria-label="Tic-Tac-Toe board">
+          {board.map((cell, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => play(i)}
+              disabled={cell !== null || result !== null || thinking}
+              aria-label={`Cell ${i + 1}${cell ? `, ${cell}` : ""}`}
+              className={`ttt-cell ${winLine?.includes(i) ? "ttt-cell-win" : ""}`}
+            >
+              <Mark cell={cell} fresh={freshIdx === i} />
+            </button>
+          ))}
+        </div>
+        {lineGeom && (
+          <svg viewBox="0 0 3 3" preserveAspectRatio="none" className="ttt-winline" aria-hidden="true">
+            <line
+              x1={lineGeom.x1} y1={lineGeom.y1} x2={lineGeom.x2} y2={lineGeom.y2}
+              stroke={result === "X" ? "#22d3ee" : "#fb7185"}
+              strokeWidth="0.09" strokeLinecap="round"
+              style={{ filter: `drop-shadow(0 0 6px ${result === "X" ? "#22d3ee" : "#fb7185"})` }}
+            />
+          </svg>
+        )}
       </div>
 
       <p className="mt-6 min-h-6 text-sm font-semibold text-slate-200">
-        {status}
+        {result ? (
+          <span key={result} className={`pop-in inline-block ${result === "X" ? "text-arcade" : result === "O" ? "text-rose-400" : "text-slate-300"}`}>
+            {status}
+          </span>
+        ) : status}
       </p>
 
       <div className="mt-4 flex items-center justify-center gap-6 text-sm text-slate-400">
-        <span>
-          You <strong className="text-white">{tally.you}</strong>
-        </span>
-        <span>
-          Draws <strong className="text-white">{tally.draws}</strong>
-        </span>
-        <span>
-          CPU <strong className="text-white">{tally.cpu}</strong>
-        </span>
+        <span>You <strong key={tally.you} className="score-pop text-white">{tally.you}</strong></span>
+        <span>Draws <strong key={tally.draws} className="score-pop text-white">{tally.draws}</strong></span>
+        <span>CPU <strong key={tally.cpu} className="score-pop text-white">{tally.cpu}</strong></span>
       </div>
 
       <button
         type="button"
         onClick={reset}
-        className="mt-6 rounded-lg border border-edge bg-panel px-6 py-2.5 text-sm font-semibold text-slate-200 transition-colors hover:border-arcade hover:text-arcade"
+        className="btn-alive mt-6 rounded-lg border border-edge bg-panel px-6 py-2.5 text-sm font-semibold text-slate-200 hover:border-arcade hover:text-arcade"
       >
         New game
       </button>
 
       <p className="mt-8 text-xs text-slate-500">
-        Liked this? The full game — plus Guessing, Snake, Snakes &amp;
-        Ladders, and Ludo — ships in the{" "}
-        <Link href="/" className="text-arcade hover:underline">
-          5IN1 Mac app
-        </Link>
-        .
+        Five games, one app —{" "}
+        <Link href="/" className="text-arcade hover:underline">5IN1</Link>, everywhere.
       </p>
+
+      <style>{`
+        .ttt-cell { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 1; border-radius: 0.75rem; border: 1px solid #232a38; background: #12161f; transition: transform 0.12s ease, border-color 0.15s ease, box-shadow 0.15s ease; }
+        .ttt-cell:not(:disabled):hover { border-color: #0e7490; transform: translateY(-2px); }
+        .ttt-cell:not(:disabled):active { transform: scale(0.93); }
+        .ttt-cell:disabled { cursor: default; }
+        .ttt-cell-win { border-color: rgba(34,211,238,0.7); box-shadow: 0 0 16px rgba(34,211,238,0.25); animation: ttt-winpulse 0.9s ease-in-out infinite; }
+        @keyframes ttt-winpulse { 0%,100% { box-shadow: 0 0 10px rgba(34,211,238,0.2); } 50% { box-shadow: 0 0 22px rgba(34,211,238,0.45); } }
+        .ttt-mark { width: 55%; height: 55%; overflow: visible; }
+        .ttt-draw line, .ttt-draw circle { stroke-dasharray: 60; stroke-dashoffset: 60; animation: ttt-draw 0.32s cubic-bezier(0.5,0,0.3,1) forwards; }
+        .ttt-draw line:nth-child(2) { animation-delay: 0.14s; }
+        @keyframes ttt-draw { to { stroke-dashoffset: 0; } }
+        .ttt-winline { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+        .ttt-winline line { stroke-dasharray: 5; stroke-dashoffset: 5; animation: ttt-winline 0.45s ease-out 0.25s forwards; }
+        @keyframes ttt-winline { to { stroke-dashoffset: 0; } }
+        @media (prefers-reduced-motion: reduce) {
+          .ttt-draw line, .ttt-draw circle, .ttt-winline line, .ttt-cell-win { animation-duration: 0.01ms !important; }
+        }
+      `}</style>
     </div>
   );
 }

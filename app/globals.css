@@ -857,3 +857,28 @@ body.no-rgb .rgb-sep {
     display: none;
   }
 }
+
+/* ---------- game quality pass: shared alive utilities ---------- */
+.score-pop { display: inline-block; animation: score-pop 0.35s cubic-bezier(0.22,1.6,0.36,1); }
+@keyframes score-pop { 0% { transform: scale(1.45); } 100% { transform: scale(1); } }
+
+.streak-glow { animation: streak-glow 1.2s ease-in-out infinite; }
+@keyframes streak-glow {
+  0%,100% { box-shadow: 0 0 8px rgba(250,204,21,0.25); }
+  50% { box-shadow: 0 0 20px rgba(250,204,21,0.55); }
+}
+
+.gameover-title {
+  letter-spacing: 0.08em;
+  animation: gameover-in 0.6s cubic-bezier(0.22,1.4,0.36,1) backwards;
+  text-shadow: 0 0 24px rgba(34,211,238,0.4);
+}
+@keyframes gameover-in {
+  0% { opacity: 0; transform: scale(0.7) translateY(10px); }
+  60% { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .score-pop, .streak-glow, .gameover-title { animation-duration: 0.01ms !important; }
+}

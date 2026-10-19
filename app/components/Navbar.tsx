@@ -33,7 +33,8 @@ export default function Navbar() {
         </Link>
 
         <button
-          className="btn-alive shrink-0 rounded-md border border-edge bg-panel px-3 py-1.5 text-sm text-slate-300"
+          type="button"
+          className="btn-alive shrink-0 rounded-md border border-edge bg-panel px-3 py-1.5 text-sm text-slate-300 md:hidden"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-label="Toggle navigation menu"

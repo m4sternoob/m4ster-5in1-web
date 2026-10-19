@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import Link from "next/link";
 
 /* Playable Guessing Game demo: guess the secret number before your attempts
@@ -195,13 +195,13 @@ export default function GuessingDemo() {
 
   return (
     <div className="w-full max-w-md text-center">
-      <p className="mb-2 text-xs font-bold tracking-widest text-arcade uppercase">
+      <p className="pop-in mb-2 text-xs font-bold tracking-widest text-arcade uppercase" style={{ "--pop-delay": "40ms" } as CSSProperties}>
         Playable demo
       </p>
-      <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+      <h1 className="pop-in text-3xl font-extrabold tracking-tight text-white sm:text-4xl" style={{ "--pop-delay": "100ms" } as CSSProperties}>
         Guessing Game
       </h1>
-      <p className="mt-3 text-sm text-slate-400">
+      <p className="pop-in mt-3 text-sm text-slate-400" style={{ "--pop-delay": "160ms" } as CSSProperties}>
         The game that started 5IN1 — guess the secret number before your
         attempts run out.
       </p>
@@ -215,7 +215,7 @@ export default function GuessingDemo() {
                 type="button"
                 onClick={() => setDifficulty(d.id)}
                 aria-pressed={difficulty === d.id}
-                className={`rounded-xl border p-4 text-left transition-colors ${
+                className={`btn-alive rounded-xl border p-4 text-left ${
                   difficulty === d.id
                     ? "border-arcade bg-panel"
                     : "border-edge bg-panel/40 hover:border-arcade-dim"
@@ -253,7 +253,7 @@ export default function GuessingDemo() {
           <button
             type="button"
             onClick={startGame}
-            className="mt-6 w-full rounded-xl bg-arcade px-6 py-3 text-sm font-bold text-ink transition-colors hover:bg-arcade-dim hover:text-white"
+            className="btn-alive mt-6 w-full rounded-xl bg-arcade px-6 py-3 text-sm font-bold text-ink hover:bg-arcade-dim hover:text-white"
           >
             Start
           </button>
@@ -274,7 +274,7 @@ export default function GuessingDemo() {
             </span>
             <span aria-live="polite">
               Attempts left{" "}
-              <strong className="text-white">
+              <strong key={attempts.length} className="score-pop inline-block text-white">
                 {attemptsLeft === null ? "∞" : attemptsLeft}
               </strong>
             </span>
@@ -316,21 +316,26 @@ export default function GuessingDemo() {
             </p>
           )}
 
-          <p className="mt-4 min-h-6 text-sm font-semibold text-slate-200">
-            {phase === "won" ? (
-              <>
-                {message}{" "}
-                {isNewBest && (
-                  <span className="text-arcade">New best score!</span>
-                )}
-              </>
-            ) : (
-              message
-            )}
-          </p>
+          {phase === "won" ? (
+            <div key="wincelebrate" className="pop-in mt-4">
+              <p className="gameover-title text-2xl font-extrabold text-arcade">CORRECT!</p>
+              <p className="mt-1 text-sm font-semibold text-slate-200">{message}</p>
+              {isNewBest && <p className="pop-in mt-1 text-sm font-bold text-yellow-300" style={{ "--pop-delay": "300ms" } as CSSProperties}>New best score!</p>}
+              <div className="guess-confetti" aria-hidden="true">
+                {Array.from({ length: 24 }, (_, i) => <span key={i} style={{ "--i": i } as any} />)}
+              </div>
+            </div>
+          ) : phase === "lost" ? (
+            <div key="lostcelebrate" className="pop-in mt-4">
+              <p className="gameover-title text-2xl font-extrabold text-rose-400">OUT OF ATTEMPTS</p>
+              <p className="mt-1 text-sm font-semibold text-slate-200">{message}</p>
+            </div>
+          ) : (
+            <p className="mt-4 min-h-6 text-sm font-semibold text-slate-200">{message}</p>
+          )}
 
           {proximity && phase === "playing" && (
-            <p className="mt-2 text-sm text-slate-300" aria-live="polite">
+            <p key={proximity.label} className="pop-in mt-2 text-sm text-slate-300" aria-live="polite">
               <span aria-hidden="true">{proximity.emoji} </span>
               {proximity.label}
             </p>
@@ -341,7 +346,7 @@ export default function GuessingDemo() {
               {[...attempts].reverse().map((a) => (
                 <li
                   key={a.number}
-                  className="flex items-center justify-between rounded-lg border border-edge bg-panel/40 px-4 py-2 text-slate-300"
+                  className="guess-attempt flex items-center justify-between rounded-lg border border-edge bg-panel/40 px-4 py-2 text-slate-300"
                 >
                   <span>
                     #{a.number} — <strong className="text-white">{a.value}</strong>
@@ -363,14 +368,14 @@ export default function GuessingDemo() {
             <button
               type="button"
               onClick={startGame}
-              className="rounded-lg border border-edge bg-panel px-6 py-2.5 text-sm font-semibold text-slate-200 transition-colors hover:border-arcade hover:text-arcade"
+              className="btn-alive rounded-lg border border-edge bg-panel px-6 py-2.5 text-sm font-semibold text-slate-200 hover:border-arcade hover:text-arcade"
             >
               Play again
             </button>
             <button
               type="button"
               onClick={backToSetup}
-              className="rounded-lg border border-edge bg-panel px-6 py-2.5 text-sm font-semibold text-slate-200 transition-colors hover:border-arcade hover:text-arcade"
+              className="btn-alive rounded-lg border border-edge bg-panel px-6 py-2.5 text-sm font-semibold text-slate-200 hover:border-arcade hover:text-arcade"
             >
               Change difficulty
             </button>
@@ -378,13 +383,30 @@ export default function GuessingDemo() {
         </div>
       )}
 
+
+      <style>{`
+        .guess-attempt { animation: guess-slide 0.3s cubic-bezier(0.22,1.2,0.36,1); }
+        @keyframes guess-slide { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: none; } }
+        .guess-confetti { position: relative; height: 0; }
+        .guess-confetti span { position: absolute; left: 50%; top: 0; width: 6px; height: 10px; border-radius: 2px; opacity: 0; }
+        .guess-confetti span:nth-child(3n) { background: #22d3ee; }
+        .guess-confetti span:nth-child(3n+1) { background: #818cf8; }
+        .guess-confetti span:nth-child(3n+2) { background: #facc15; }
+        .guess-confetti span { animation: guess-confetti 1.4s ease-out forwards; animation-delay: calc(var(--i) * 35ms); }
+        @keyframes guess-confetti {
+          0% { opacity: 1; transform: translate(0,0) rotate(0); }
+          100% { opacity: 0; transform: translate(calc((var(--i) - 12) * 14px), 90px) rotate(540deg); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .guess-attempt, .guess-confetti span { animation-duration: 0.01ms !important; }
+        }
+      `}</style>
       <p className="mt-8 text-xs text-slate-500">
-        A taste of the full game — cryptic hints, the daily challenge, and win
-        streaks ship in the{" "}
+        Five games, one app —{" "}
         <Link href="/" className="text-arcade hover:underline">
-          5IN1 Mac app
+          5IN1
         </Link>
-        .
+        , everywhere.
       </p>
     </div>
   );
