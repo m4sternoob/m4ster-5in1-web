@@ -1,20 +1,20 @@
 import { CONTACT_EMAIL, GITHUB_URL } from "../data/site";
+import AliveLogo from "./AliveLogo";
 
-/* Site footer: contact, repo link, and a small disclaimer. */
+/* Site footer: contact, repo link, and a small disclaimer.
+   Brand mark is the 5x alive logo, fluid via clamp(). */
 
 export default function Footer() {
   return (
     <footer className="mt-auto border-t border-edge bg-panel/40">
-      <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 py-10 text-center sm:flex-row sm:justify-between sm:px-6 sm:text-left">
-        <div>
-          <p className="text-lg font-extrabold tracking-tight text-white">
-            5<span className="text-arcade">IN</span>1
-          </p>
-          <p className="mt-1 text-sm text-slate-400">
+      <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 py-10 text-center sm:flex-row sm:justify-between sm:px-6 sm:text-left">
+        <div className="shrink-0">
+          <AliveLogo size="md" />
+          <p className="mt-3 text-sm text-slate-400">
             Five games, every platform. Built by m4sternoob.
           </p>
         </div>
-        <div className="flex flex-col items-center gap-2 text-sm sm:items-end">
+        <div className="flex shrink-0 flex-col items-center gap-2 text-sm sm:items-end">
           <a
             href={`mailto:${CONTACT_EMAIL}`}
             className="text-slate-300 transition-colors hover:text-arcade"
