@@ -272,7 +272,10 @@ export default function SnakeGame() {
 
     const resize = () => {
       const dpr = Math.min(2, window.devicePixelRatio || 1);
-      const w = wrap.clientWidth;
+      // clientWidth includes the wrapper's padding; subtract it so the canvas
+      // fits exactly inside the content box and never bleeds past the right edge.
+      const cs = getComputedStyle(wrap);
+      const w = Math.max(0, wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
       canvas.width = w * dpr;
       canvas.height = w * dpr;
       canvas.style.width = `${w}px`;
@@ -595,7 +598,7 @@ export default function SnakeGame() {
 
       <div
         ref={wrapRef}
-        className="pop-in mx-auto w-[88%] max-w-full touch-none overflow-hidden rounded-2xl border border-edge bg-panel p-2.5 select-none"
+        className="pop-in mx-auto box-border w-full max-w-[100vw] touch-none overflow-hidden rounded-2xl border border-edge bg-panel p-2.5 select-none"
         style={{ ["--pop-delay" as string]: "140ms" }}
         onTouchStart={(e) => {
           const t = e.touches[0];
@@ -615,7 +618,7 @@ export default function SnakeGame() {
         <canvas
           ref={canvasRef}
           tabIndex={0}
-          className="block w-full cursor-pointer rounded-xl focus:ring-2 focus:ring-arcade/60 focus:outline-none"
+          className="block h-auto w-full max-w-full cursor-pointer rounded-xl focus:ring-2 focus:ring-arcade/60 focus:outline-none"
           aria-label="Snake game board. Click the board, then press space to start."
           onClick={() => canvasRef.current?.focus()}
         />
