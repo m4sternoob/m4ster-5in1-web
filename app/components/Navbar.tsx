@@ -22,8 +22,10 @@ function rewindPage() {
   window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
 }
 
-/* Sticky top navigation. Collapses to a compact menu on small screens.
-   The logo is 5x and fluid (clamp) — nav grows taller to fit it. */
+/* Sticky top navigation — premium dark gradient with cyan/indigo tint,
+   backdrop blur, and an animated RGB separator as the bottom border.
+   Collapses to a compact menu on small screens. The logo is 5x and
+   fluid (clamp) — nav grows taller to fit it. */
 
 const LINKS = [
   { href: "/#games", label: "Games" },
@@ -50,7 +52,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-edge bg-ink/85 backdrop-blur">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-edge bg-[linear-gradient(160deg,rgba(20,25,42,0.97),rgba(11,14,20,0.94))] shadow-[0_12px_40px_-12px_rgba(0,0,0,0.6)] backdrop-blur-md">
       <nav className="flex items-center justify-between gap-4 py-4 pr-4 sm:pr-6">
         <Link
           href="/"
@@ -103,6 +105,13 @@ export default function Navbar() {
           ))}
         </ul>
       )}
+
+      {/* RGB separator as the glowing bottom border. The border-edge
+          line above stays as a fallback when RGB is disabled. */}
+      <div
+        className="rgb-sep pointer-events-none absolute inset-x-0 bottom-0"
+        aria-hidden="true"
+      />
     </header>
   );
 }

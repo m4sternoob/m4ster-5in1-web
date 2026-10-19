@@ -6,7 +6,13 @@ import AliveLogo from "./AliveLogo";
 
 export default function Footer() {
   return (
-    <footer className="mt-auto border-t border-edge bg-panel/40">
+    <footer className="relative mt-auto border-t border-edge bg-[linear-gradient(180deg,rgba(11,14,20,0.96),rgba(19,25,43,0.98))] backdrop-blur-md">
+      {/* RGB separator as the glowing top border. The border-edge line
+          stays as a fallback when RGB is disabled. */}
+      <div
+        className="rgb-sep pointer-events-none absolute inset-x-0 top-0"
+        aria-hidden="true"
+      />
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 py-10 text-center sm:flex-row sm:justify-between sm:px-6 sm:text-left">
         <div className="shrink-0">
           <AliveLogo size="md" />
