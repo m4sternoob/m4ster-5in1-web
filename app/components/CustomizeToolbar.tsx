@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /* Floating Customize toolbar — logo sizes, glow intensity, background
    animation, and RGB separator controls. Settings persist to localStorage
@@ -133,19 +133,77 @@ export default function CustomizeToolbar() {
     }
   };
 
+  const [savedFlash, setSavedFlash] = useState(false);
+  const saveTimer = useRef<number | null>(null);
+
+  const save = () => {
+    /* Explicit save: writes the current settings to localStorage and flashes
+       a short confirmation. update() already auto-saves on every change —
+       this is the deliberate "keep these" button the user asked for. */
+    apply(s);
+    try {
+      localStorage.setItem(KEY, JSON.stringify(s));
+    } catch {
+      /* ignore */
+    }
+    setSavedFlash(true);
+    if (saveTimer.current !== null) window.clearTimeout(saveTimer.current);
+    saveTimer.current = window.setTimeout(() => setSavedFlash(false), 1500);
+  };
+
+  useEffect(
+    () => () => {
+      if (saveTimer.current !== null) window.clearTimeout(saveTimer.current);
+    },
+    [],
+  );
+
   return (
     <div className="fixed right-4 bottom-4 z-[9998]">
       {open && (
         <div className="pop-in mb-3 max-h-[80dvh] w-64 space-y-4 overflow-y-auto overscroll-contain rounded-xl border border-edge bg-panel/95 p-4 shadow-2xl backdrop-blur select-none">
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-slate-100">Customize</span>
-            <button
-              type="button"
-              onClick={reset}
-              className="tap-fast text-xs text-slate-400 hover:text-arcade"
-            >
-              Reset
-            </button>
+            <div className="flex items-center gap-2">
+              <span
+                aria-live="polite"
+                className={`text-[11px] font-medium text-arcade transition-opacity duration-300 ${
+                  savedFlash ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                Saved
+              </span>
+              <button
+                type="button"
+                onClick={save}
+                aria-label="Save settings"
+                title="Save settings"
+                className="tap-fast flex h-7 w-7 items-center justify-center rounded-md border border-edge text-slate-400 hover:border-arcade hover:text-arcade"
+              >
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={reset}
+                className="tap-fast text-xs text-slate-400 hover:text-arcade"
+              >
+                Reset
+              </button>
+            </div>
           </div>
 
           <Row
