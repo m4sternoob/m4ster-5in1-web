@@ -284,6 +284,13 @@ export default function TileGrid() {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const touch = window.matchMedia("(hover: none)").matches;
 
+    /* Ambient floor: touch/OLED phone screens need a higher floor to stay
+       visible — desktop-faint alphas read as solid black on mobile. */
+    const AMBIENT = touch ? 0.24 : 0.12;
+    const GRID_ALPHA = touch ? 0.11 : 0.055;
+    const FILL_BASE = touch ? 0.055 : 0.028;
+    const BORDER_BASE = touch ? 0.17 : 0.1;
+
     let CELL = window.innerWidth < 640 ? 56 : 72;
     let w = 0;
     let h = 0;
@@ -294,6 +301,12 @@ export default function TileGrid() {
       const dpr = Math.min(1.5, window.devicePixelRatio || 1);
       w = window.innerWidth;
       h = window.innerHeight;
+      if (w <= 0 || h <= 0) {
+        /* Viewport not ready (mobile URL-bar transitions) — retry next frame
+           instead of committing a zero-size canvas that draws nothing. */
+        requestAnimationFrame(resize);
+        return;
+      }
       canvas.width = Math.floor(w * dpr);
       canvas.height = Math.floor(h * dpr);
       canvas.style.width = `${w}px`;
@@ -302,9 +315,13 @@ export default function TileGrid() {
     };
     resize();
     window.addEventListener("resize", resize);
+    window.addEventListener("orientationchange", resize);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", resize);
+    }
 
     const drawBaseGrid = () => {
-      ctx.strokeStyle = `rgba(${CYAN},0.055)`;
+      ctx.strokeStyle = `rgba(${CYAN},${GRID_ALPHA})`;
       ctx.lineWidth = 1;
       ctx.beginPath();
       for (let gx = 0.5; gx <= w; gx += CELL) {
@@ -318,6 +335,14 @@ export default function TileGrid() {
       ctx.stroke();
     };
 
+    const stopResize = () => {
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("orientationchange", resize);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", resize);
+      }
+    };
+
     if (reduced) {
       // Static: one frozen frame, no loop, no listeners.
       drawBaseGrid();
@@ -325,10 +350,10 @@ export default function TileGrid() {
       for (let cy = 0; cy * CELL < h; cy++) {
         for (let cx = 0; cx * CELL < w; cx++) {
           const type = tileType(cx, cy);
-          DRAWN[type](ctx, cx * CELL, cy * CELL, CELL, t + rand2(cx, cy, 3) * 6, 0.12);
+          DRAWN[type](ctx, cx * CELL, cy * CELL, CELL, t + rand2(cx, cy, 3) * 6, AMBIENT);
         }
       }
-      return () => window.removeEventListener("resize", resize);
+      return stopResize;
     }
 
     const tiles = new Map<string, Tile>();
@@ -424,16 +449,16 @@ export default function TileGrid() {
           if (boost > 1) boost = 1;
 
           const glow = Math.min(1, heat * 0.85 + boost * 0.9);
-          const intensity = Math.min(1, 0.12 + heat * 0.6 + boost * 0.75);
+          const intensity = Math.min(1, AMBIENT + heat * 0.6 + boost * 0.75);
           if (intensity < 0.04 && glow < 0.04) continue;
 
           const x = cx * CELL;
           const y = cy * CELL;
 
           // Tile glow fill + border.
-          ctx.fillStyle = `rgba(${CYAN},${(0.16 * glow + 0.028).toFixed(3)})`;
+          ctx.fillStyle = `rgba(${CYAN},${(0.16 * glow + FILL_BASE).toFixed(3)})`;
           ctx.fillRect(x + 0.5, y + 0.5, CELL - 1, CELL - 1);
-          ctx.strokeStyle = `rgba(${CYAN},${(0.1 + 0.42 * glow).toFixed(3)})`;
+          ctx.strokeStyle = `rgba(${CYAN},${(BORDER_BASE + 0.42 * glow).toFixed(3)})`;
           ctx.lineWidth = glow > 0.4 ? 1.5 : 1;
           ctx.strokeRect(x + 0.75, y + 0.75, CELL - 1.5, CELL - 1.5);
 
@@ -460,7 +485,7 @@ export default function TileGrid() {
 
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
+      stopResize();
       if (!touch) window.removeEventListener("pointermove", onMove);
     };
   }, []);
