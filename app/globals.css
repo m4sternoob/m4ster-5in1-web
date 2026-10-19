@@ -577,3 +577,283 @@ body {
     animation: none !important;
   }
 }
+
+/* ==================================================================
+   m4ster design system additions (2026-10-19)
+   RGB separators · scroll animations · orb cursor · neon logo
+   ================================================================== */
+
+/* ------------------------------------------------------------------
+   1. RGB SEPARATORS — animated flowing gradient lines.
+   Spec: .rgb-sep class, body.no-rgb hides all, body.rgb-breathe switches
+   to breathing mode, --rgb-speed controls duration (default 6s).
+   ------------------------------------------------------------------ */
+:root {
+  --rgb-speed: 6s;
+}
+
+.rgb-sep {
+  height: 2px;
+  border: none;
+  background: linear-gradient(
+    90deg,
+    #ff2d78,
+    #ff8c00,
+    #ffee00,
+    #00e676,
+    #00ccff,
+    #7c4dff,
+    #ff2d78
+  );
+  background-size: 200% 100%;
+  animation: rgb-flow var(--rgb-speed) linear infinite;
+  border-radius: 2px;
+  opacity: 0.85;
+}
+
+@keyframes rgb-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* Breathing mode: opacity pulse instead of flow */
+body.rgb-breathe .rgb-sep {
+  animation: rgb-breathe 4s ease-in-out infinite;
+  background-size: 100% 100%;
+}
+
+@keyframes rgb-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Hide all RGB separators */
+body.no-rgb .rgb-sep {
+  display: none;
+}
+
+/* ------------------------------------------------------------------
+   2. SCROLL ANIMATIONS — each section unlocks with its own flavor.
+   Variants: fade-up, scale-in, slide-left, slide-right, blur-in.
+   JS adds .scroll-visible when the element enters the viewport.
+   ------------------------------------------------------------------ */
+.scroll-reveal {
+  opacity: 0;
+  will-change: transform, opacity, filter;
+}
+
+.scroll-reveal.scroll-visible {
+  opacity: 1;
+}
+
+/* Variant: fade-up (default) */
+.scroll-fade-up {
+  transform: translateY(40px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.scroll-fade-up.scroll-visible {
+  transform: translateY(0);
+}
+
+/* Variant: scale-in (pop from center) */
+.scroll-scale-in {
+  transform: scale(0.85);
+  filter: blur(8px);
+  transition:
+    opacity 0.7s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 0.7s ease;
+}
+.scroll-scale-in.scroll-visible {
+  transform: scale(1);
+  filter: blur(0);
+}
+
+/* Variant: slide-in from left */
+.scroll-slide-left {
+  transform: translateX(-60px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.scroll-slide-left.scroll-visible {
+  transform: translateX(0);
+}
+
+/* Variant: slide-in from right */
+.scroll-slide-right {
+  transform: translateX(60px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.scroll-slide-right.scroll-visible {
+  transform: translateX(0);
+}
+
+/* Variant: blur-in */
+.scroll-blur-in {
+  filter: blur(12px);
+  transform: scale(0.96);
+  transition:
+    opacity 0.8s ease,
+    filter 0.8s ease,
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.scroll-blur-in.scroll-visible {
+  filter: blur(0);
+  transform: scale(1);
+}
+
+/* Stagger children inside a scroll-reveal container */
+.scroll-stagger > * {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--stagger-i, 0) * 90ms);
+}
+.scroll-reveal.scroll-visible.scroll-stagger > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ------------------------------------------------------------------
+   3. NEON LOGO — enhanced glow pulse for the 5IN1 brand mark.
+   ------------------------------------------------------------------ */
+@keyframes neon-pulse {
+  0%,
+  100% {
+    filter:
+      drop-shadow(0 0 8px rgb(34 211 238 / 0.7))
+      drop-shadow(0 0 28px rgb(34 211 238 / 0.35))
+      drop-shadow(0 0 60px rgb(34 211 238 / 0.15));
+    transform: scale(1);
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 14px rgb(34 211 238 / 1))
+      drop-shadow(0 0 44px rgb(34 211 238 / 0.55))
+      drop-shadow(0 0 90px rgb(34 211 238 / 0.25));
+    transform: scale(1.04);
+  }
+}
+
+.neon-logo {
+  display: inline-block;
+  animation: neon-pulse 2.8s ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+/* ------------------------------------------------------------------
+   4. ORB CURSOR — signature m4ster orb follows the mouse.
+   Special effect (expand + white-hot core + pulsing ring) ONLY on
+   elements with .download-btn.
+   ------------------------------------------------------------------ */
+.orb-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 9999;
+  background: radial-gradient(
+    circle,
+    rgb(34 211 238 / 0.9) 0%,
+    rgb(34 211 238 / 0.35) 45%,
+    transparent 70%
+  );
+  box-shadow:
+    0 0 12px rgb(34 211 238 / 0.5),
+    0 0 30px rgb(34 211 238 / 0.2);
+  transform: translate(-50%, -50%);
+  transition:
+    width 0.25s ease,
+    height 0.25s ease,
+    background 0.25s ease;
+  mix-blend-mode: screen;
+}
+
+/* Special: hovering a download button — orb expands, white-hot core */
+.orb-cursor.orb-hot {
+  width: 52px;
+  height: 52px;
+  background: radial-gradient(
+    circle,
+    #ffffff 0%,
+    rgb(255 255 255 / 0.9) 18%,
+    rgb(34 211 238 / 0.6) 45%,
+    transparent 72%
+  );
+  box-shadow:
+    0 0 24px rgb(255 255 255 / 0.7),
+    0 0 60px rgb(34 211 238 / 0.5);
+  animation: orb-ring 1.2s ease-out infinite;
+}
+
+@keyframes orb-ring {
+  0% {
+    box-shadow:
+      0 0 0 0 rgb(34 211 238 / 0.6),
+      0 0 24px rgb(255 255 255 / 0.7),
+      0 0 60px rgb(34 211 238 / 0.5);
+  }
+  100% {
+    box-shadow:
+      0 0 0 22px rgb(34 211 238 / 0),
+      0 0 24px rgb(255 255 255 / 0.7),
+      0 0 60px rgb(34 211 238 / 0.5);
+  }
+}
+
+/* Hide the orb on touch devices */
+@media (hover: none), (pointer: coarse) {
+  .orb-cursor {
+    display: none;
+  }
+}
+
+/* Keep native cursor visible alongside orb (safer for usability) */
+@media (hover: hover) and (pointer: fine) {
+  body.orb-active {
+    cursor: auto;
+  }
+}
+
+/* Reduced motion: kill the new animations */
+@media (prefers-reduced-motion: reduce) {
+  .rgb-sep {
+    animation: none;
+  }
+  .scroll-reveal {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+  .scroll-stagger > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .neon-logo {
+    animation: none;
+  }
+  .orb-cursor {
+    display: none;
+  }
+}

@@ -65,7 +65,7 @@ export default function Download() {
                   href={p.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn-alive mt-6 inline-block rounded-xl bg-arcade px-8 py-3 text-base font-bold text-ink shadow-lg shadow-cyan-500/20 hover:bg-cyan-300"
+                  className="btn-alive download-btn mt-6 inline-block rounded-xl bg-arcade px-8 py-3 text-base font-bold text-ink shadow-lg shadow-cyan-500/20 hover:bg-cyan-300"
                 >
                   {p.cta}
                 </a>

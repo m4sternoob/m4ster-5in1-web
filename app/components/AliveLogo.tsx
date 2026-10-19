@@ -11,7 +11,7 @@ export default function AliveLogo({ size = "md" }: { size?: "sm" | "md" | "lg" }
         : "text-[clamp(2rem,1.25rem+4vw,5.625rem)]";
   return (
     <span
-      className={`logo-alive font-extrabold tracking-tight text-white ${cls}`}
+      className={`logo-alive neon-logo font-extrabold tracking-tight text-white ${cls}`}
       aria-label="5IN1"
     >
       5<span className="text-shimmer">IN</span>1
