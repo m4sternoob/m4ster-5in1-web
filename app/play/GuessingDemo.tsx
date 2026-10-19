@@ -2,6 +2,7 @@
 
 import { useState, type CSSProperties } from "react";
 import Link from "next/link";
+import FullscreenButton from "./FullscreenButton";
 
 /* Playable Guessing Game demo: guess the secret number before your attempts
    run out. Mirrors the Mac app's rules — Easy 1–50 (8 attempts),
@@ -194,13 +195,16 @@ export default function GuessingDemo() {
   const hintLabel = (hint: Hint) => (hint === "correct" ? "correct" : hint === "low" ? "too low" : "too high");
 
   return (
-    <div className="w-full max-w-md text-center">
+    <div className="w-full px-4 text-center sm:max-w-md sm:px-0">
       <p className="pop-in mb-2 text-xs font-bold tracking-widest text-arcade uppercase" style={{ "--pop-delay": "40ms" } as CSSProperties}>
         Playable demo
       </p>
-      <h1 className="pop-in text-3xl font-extrabold tracking-tight text-white sm:text-4xl" style={{ "--pop-delay": "100ms" } as CSSProperties}>
-        Guessing Game
-      </h1>
+      <div className="pop-in flex items-center justify-center gap-3" style={{ "--pop-delay": "100ms" } as CSSProperties}>
+        <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+          Guessing Game
+        </h1>
+        <FullscreenButton />
+      </div>
       <p className="pop-in mt-3 text-sm text-slate-400" style={{ "--pop-delay": "160ms" } as CSSProperties}>
         The game that started 5IN1 — guess the secret number before your
         attempts run out.

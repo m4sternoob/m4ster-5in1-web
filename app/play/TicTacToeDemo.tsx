@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
+import FullscreenButton from "./FullscreenButton";
 
 /* Tic-Tac-Toe vs minimax CPU — X draws in with stroke animation,
    O draws as an arc, win line strikes through, cells bounce on press.
@@ -155,18 +156,21 @@ export default function TicTacToeDemo() {
   })() : null;
 
   return (
-    <div className="w-full max-w-md text-center">
+    <div className="w-full px-4 text-center sm:max-w-md sm:px-0">
       <p className="pop-in mb-2 text-xs font-bold tracking-widest text-arcade uppercase" style={{ "--pop-delay": "40ms" } as CSSProperties}>
         Playable demo
       </p>
-      <h1 className="pop-in text-3xl font-extrabold tracking-tight text-white sm:text-4xl" style={{ "--pop-delay": "100ms" } as CSSProperties}>
-        Tic-Tac-Toe vs CPU
-      </h1>
+      <div className="pop-in flex items-center justify-center gap-3" style={{ "--pop-delay": "100ms" } as CSSProperties}>
+        <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+          Tic-Tac-Toe vs CPU
+        </h1>
+        <FullscreenButton />
+      </div>
       <p className="pop-in mt-3 text-sm text-slate-400" style={{ "--pop-delay": "160ms" } as CSSProperties}>
         An unbeatable minimax opponent — it never plays a losing move.
       </p>
 
-      <div className="pop-in relative mx-auto mt-8 w-64 sm:w-72" style={{ "--pop-delay": "220ms" } as CSSProperties}>
+      <div className="pop-in relative mx-auto mt-8 w-full sm:w-72" style={{ "--pop-delay": "220ms" } as CSSProperties}>
         <div className="grid grid-cols-3 gap-2" role="grid" aria-label="Tic-Tac-Toe board">
           {board.map((cell, i) => (
             <button
