@@ -39,7 +39,7 @@ All colors are exact. No approximations.
 
 - **Font:** Geist Sans (`var(--font-geist-sans)`), fallback `ui-sans-serif, system-ui, sans-serif`. Dark-first; `color-scheme: dark`.
 - **Logo:** `font-extrabold`, `tracking-tight`. Sizes: `text-4xl sm:text-5xl` (nav), `text-7xl sm:text-8xl` (hero), `text-xl` (compact).
-- **Logo text treatment:** `5<span shimmer>IN</span>1` — "5" and "1" in solid white, "IN" in animated shimmer gradient.
+- **Logo:** designed vector monogram (`public/logo.svg`, rendered by `AliveLogo.tsx`) — one continuous flowing gesture 5 → I → N → 1, 9px rounded strokes, lavender `#e9d5ff` → cyan `#22d3ee` → indigo `#818cf8` gradient, SVG neon glow. Custom paths, never plain text. Still breathes via `logo-breathe`.
 - **Section headings:** eyebrow (small caps accent), title (bold, large), blurb (secondary text).
 - **Game cards:** title `text-lg font-bold text-white`; tagline `text-sm` secondary; feature list `text-sm` with `▸` accent markers.
 - **Buttons:** `font-semibold`, no uppercase.
