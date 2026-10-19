@@ -5,6 +5,7 @@ import AuraBackground from "./components/AuraBackground";
 import TileGrid from "./components/TileGrid";
 import OrbCursor from "./components/OrbCursor";
 import CustomizeToolbar from "./components/CustomizeToolbar";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -84,6 +85,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <OrbCursor />
         <CustomizeToolbar />
         {children}
+        <Analytics />
+        <script
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon='{"token": "05837d6db2fc4b29bcddcbb420626216"}'
+        />
       </body>
     </html>
   );
