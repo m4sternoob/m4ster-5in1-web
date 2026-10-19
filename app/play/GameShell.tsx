@@ -14,7 +14,7 @@ export default function GameShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="w-full max-w-2xl text-center">
+    <div className="w-full max-w-2xl text-center md:pt-10">
       <AuraBackground />
       <BackToGames />
       <p className="pop-in mb-2 text-xs font-bold tracking-widest text-arcade uppercase">

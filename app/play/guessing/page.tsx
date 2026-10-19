@@ -16,7 +16,7 @@ export default function Page() {
     <div className="flex min-h-full flex-col">
       <Navbar />
       <main className="flex flex-1 items-center justify-center px-4 pt-28 pb-16 sm:px-6">
-        <div className="flex w-full flex-col items-center">
+        <div className="flex w-full flex-col items-center md:pt-10">
           <BackToGames />
           <GuessingDemo />
         </div>
