@@ -2,10 +2,10 @@
 
 import { useEffect, useRef } from "react";
 
-/* Signature m4ster orb cursor — follows the mouse everywhere.
-   Special effect ONLY on download buttons (.download-btn):
-   orb expands, white-hot core, pulsing ring.
-   Regular interactive elements get the normal small orb. */
+/* Signature m4ster orb cursor — follows the mouse everywhere, native
+   cursor hidden. Red-hot special effect (expand + red glowing core +
+   pulsing ring) on buttons, links, and [data-cursor="red"] elements.
+   Regular content gets the normal small cyan orb. */
 
 export default function OrbCursor() {
   const orbRef = useRef<HTMLDivElement>(null);
@@ -17,8 +17,9 @@ export default function OrbCursor() {
     const orb = orbRef.current;
     if (!orb) return;
 
-    // Skip on touch devices
+    // Skip on touch devices and when the user prefers reduced motion
     if (window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     document.body.classList.add("orb-active");
 
@@ -26,9 +27,11 @@ export default function OrbCursor() {
       target.current.x = e.clientX;
       target.current.y = e.clientY;
 
-      // Hot state: hovering a download button?
+      // Red-hot state: hovering a button, link, or marked element?
       const t = e.target as HTMLElement | null;
-      const hot = !!t?.closest?.(".download-btn");
+      const hot = !!t?.closest?.(
+        'button, a, [role="button"], [data-cursor="red"], .download-btn'
+      );
       orb.classList.toggle("orb-hot", hot);
     };
 

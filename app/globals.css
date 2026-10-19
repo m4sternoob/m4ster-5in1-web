@@ -809,8 +809,8 @@ body.no-rgb .rgb-sep {
 
 /* ------------------------------------------------------------------
    4. ORB CURSOR — signature m4ster orb follows the mouse.
-   Special effect (expand + white-hot core + pulsing ring) ONLY on
-   elements with .download-btn.
+   Red-hot special effect (expand + red glowing core + pulsing ring)
+   on buttons, links, and [data-cursor="red"] elements.
    ------------------------------------------------------------------ */
 .orb-cursor {
   position: fixed;
@@ -838,35 +838,35 @@ body.no-rgb .rgb-sep {
   mix-blend-mode: screen;
 }
 
-/* Special: hovering a download button — orb expands, white-hot core */
+/* Special: hovering a button/link — orb expands, red-hot glowing core */
 .orb-cursor.orb-hot {
   width: 52px;
   height: 52px;
   background: radial-gradient(
     circle,
     #ffffff 0%,
-    rgb(255 255 255 / 0.9) 18%,
-    rgb(34 211 238 / 0.6) 45%,
+    rgb(255 45 120 / 0.9) 18%,
+    rgb(255 45 120 / 0.55) 45%,
     transparent 72%
   );
   box-shadow:
-    0 0 24px rgb(255 255 255 / 0.7),
-    0 0 60px rgb(34 211 238 / 0.5);
+    0 0 24px rgb(255 45 120 / 0.8),
+    0 0 60px rgb(255 45 120 / 0.5);
   animation: orb-ring 1.2s ease-out infinite;
 }
 
 @keyframes orb-ring {
   0% {
     box-shadow:
-      0 0 0 0 rgb(34 211 238 / 0.6),
-      0 0 24px rgb(255 255 255 / 0.7),
-      0 0 60px rgb(34 211 238 / 0.5);
+      0 0 0 0 rgb(255 45 120 / 0.6),
+      0 0 24px rgb(255 45 120 / 0.8),
+      0 0 60px rgb(255 45 120 / 0.5);
   }
   100% {
     box-shadow:
-      0 0 0 22px rgb(34 211 238 / 0),
-      0 0 24px rgb(255 255 255 / 0.7),
-      0 0 60px rgb(34 211 238 / 0.5);
+      0 0 0 22px rgb(255 45 120 / 0),
+      0 0 24px rgb(255 45 120 / 0.8),
+      0 0 60px rgb(255 45 120 / 0.5);
   }
 }
 
@@ -877,10 +877,13 @@ body.no-rgb .rgb-sep {
   }
 }
 
-/* Keep native cursor visible alongside orb (safer for usability) */
-@media (hover: hover) and (pointer: fine) {
-  body.orb-active {
-    cursor: auto;
+/* Hide the native cursor — the orb replaces it.
+   Fine-pointer + no reduced-motion only: touch devices and
+   reduced-motion users keep their native cursor. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  body.orb-active,
+  body.orb-active * {
+    cursor: none !important;
   }
 }
 
