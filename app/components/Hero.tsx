@@ -86,7 +86,13 @@ export default function Hero() {
     <section className="relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-28">
       <div className="relative mx-auto flex max-w-4xl flex-col items-center px-4 text-center sm:px-6">
         <Reveal delay={0}>
-          <AliveLogo size="lg" />
+          <Link
+            href="/play"
+            aria-label="Play games"
+            className="block cursor-pointer"
+          >
+            <AliveLogo size="lg" />
+          </Link>
         </Reveal>
         <BannerReveal>
           <img
