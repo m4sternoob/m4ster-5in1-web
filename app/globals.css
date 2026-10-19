@@ -922,8 +922,12 @@ body.no-rgb .rgb-sep {
   .score-pop, .streak-glow, .gameover-title { animation-duration: 0.01ms !important; }
 }
 
-/* Customize toolbar: hide animated background layers when disabled. */
-body.no-bg-anim .tile-grid-layer,
-body.no-bg-anim .aura-layer {
-  display: none !important;
+/* ------------------------------------------------------------------
+   Logo rewind — clicking the top-left logo plays every CSS animation
+   backwards for a beat while the page glides back to the top.
+   ------------------------------------------------------------------ */
+body.rewind *,
+body.rewind *::before,
+body.rewind *::after {
+  animation-direction: reverse !important;
 }
