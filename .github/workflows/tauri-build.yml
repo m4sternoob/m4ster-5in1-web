@@ -19,5 +19,5 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: '6IN1 ${{ github.ref_name }}'
+          releaseName: '5IN1 ${{ github.ref_name }}'
           releaseDraft: true
