@@ -1,5 +1,6 @@
 import SectionHeading from "./SectionHeading";
 import Reveal from "./Reveal";
+import InstallApp from "./InstallApp";
 import {
   WINDOWS_DOWNLOAD_URL,
   MAC_DOWNLOAD_URL,
@@ -71,6 +72,12 @@ export default function Download() {
             </Reveal>
           ))}
         </div>
+
+        <Reveal delay={240}>
+          <div className="mt-10 flex justify-center">
+            <InstallApp />
+          </div>
+        </Reveal>
 
         <Reveal delay={320}>
           <dl className="mx-auto mt-12 grid max-w-3xl gap-4 text-left sm:grid-cols-3">

@@ -6,7 +6,6 @@ import TileGrid from "./components/TileGrid";
 import OrbCursor from "./components/OrbCursor";
 import CustomizeToolbar from "./components/CustomizeToolbar";
 import BackToTop from "./components/BackToTop";
-import InstallApp from "./components/InstallApp";
 import PwaRegister from "./components/PwaRegister";
 import AutoFullscreen from "./components/AutoFullscreen";
 
@@ -136,7 +135,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <OrbCursor />
         <CustomizeToolbar />
         <BackToTop />
-        <InstallApp />
         <PwaRegister />
         <AutoFullscreen />
         <div className="relative z-10 flex min-h-full flex-col">{children}</div>

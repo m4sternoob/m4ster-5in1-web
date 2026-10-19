@@ -1,11 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /* Install App button — triggers the PWA install prompt.
-   Shows only when the browser fires beforeinstallprompt and the app is
-   NOT already installed (standalone display or iOS navigator.standalone).
-   Styled with the alive design system; sits next to the customize toolbar. */
+   Home page Download section ONLY. Auto-hides ~5.5s after it appears if
+   untouched, and hides permanently once the app is installed. */
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -16,6 +15,8 @@ export default function InstallApp() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
   const [iosHint, setIosHint] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const isStandalone =
@@ -37,13 +38,22 @@ export default function InstallApp() {
     };
     window.addEventListener("beforeinstallprompt", onPrompt);
     window.addEventListener("appinstalled", onInstalled);
+
+    // Auto-hide after ~5.5s if the user never taps it.
+    timerRef.current = window.setTimeout(() => setDismissed(true), 5500);
     return () => {
       window.removeEventListener("beforeinstallprompt", onPrompt);
       window.removeEventListener("appinstalled", onInstalled);
+      if (timerRef.current !== null) window.clearTimeout(timerRef.current);
     };
   }, []);
 
   const install = useCallback(async () => {
+    // User engaged — cancel the auto-hide so the install flow is uninterrupted.
+    if (timerRef.current !== null) {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
     if (deferred) {
       await deferred.prompt();
       const { outcome } = await deferred.userChoice;
@@ -55,21 +65,10 @@ export default function InstallApp() {
     setIosHint((v) => !v);
   }, [deferred]);
 
-  if (installed) return null;
+  if (installed || dismissed) return null;
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        right: 16,
-        bottom: 76,
-        zIndex: 60,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-end",
-        gap: 8,
-      }}
-    >
+    <div className="flex flex-col items-center gap-3">
       {iosHint && (
         <div
           style={{
@@ -79,8 +78,9 @@ export default function InstallApp() {
             padding: "10px 14px",
             fontSize: 13,
             color: "#e9d5ff",
-            maxWidth: 230,
+            maxWidth: 260,
             boxShadow: "0 0 24px rgba(34,211,238,0.25)",
+            textAlign: "center",
           }}
         >
           Tap <b>Share</b> → <b>Add to Home Screen</b> to install M4ster-5IN1.
