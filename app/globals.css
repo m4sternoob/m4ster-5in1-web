@@ -13,6 +13,39 @@
 :root {
   color-scheme: dark;
 }
+/* ------------------------------------------------------------------
+   0. FULL-BLEED MOBILE — background covers the whole screen including
+   notch / status-bar / nav-bar safe areas. Needs viewport-fit=cover
+   (see layout.tsx viewport export) to take effect.
+   ------------------------------------------------------------------ */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-ink);
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  overscroll-behavior-y: none;
+}
+
+/* Fixed ambient layers span the visual viewport, safe areas included. */
+.tile-grid-layer,
+.aura-layer {
+  position: fixed;
+  inset: 0;
+  width: 100dvw;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+}
+
 
 html {
   scroll-behavior: smooth;

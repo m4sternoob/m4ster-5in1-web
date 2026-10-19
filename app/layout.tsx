@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AuraBackground from "./components/AuraBackground";
@@ -76,7 +76,6 @@ export const metadata: Metadata = {
     apple: "/apple-icon.png",
   },
   manifest: "/manifest.json",
-  themeColor: "#0a0a1a",
   appleWebApp: {
     capable: true,
     title: "5IN1",
@@ -110,6 +109,14 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+};
+
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0b0e14",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
