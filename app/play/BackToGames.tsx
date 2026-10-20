@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function BackToGames() {
   return (
-    <div className="sticky top-[136px] z-40 mb-6 flex w-full justify-start md:top-[148px]">
+    <div className="back-to-games sticky top-[136px] z-40 mb-6 flex w-full justify-start md:top-[148px]">
       <Link
         href="/play"
         aria-label="Back to all games"

@@ -47,6 +47,20 @@ body {
   z-index: 0;
 }
 
+/* ------------------------------------------------------------------
+   0b. APP MODE — inside the Tauri/Capacitor shells or an installed
+   PWA, AppShell adds `app-mode` to <html> before paint. All website
+   chrome disappears: the app gets only the AppBar, the launcher, and
+   the games. The live background layers above stay untouched.
+   ------------------------------------------------------------------ */
+html.app-mode .site-navbar,
+html.app-mode .site-footer,
+html.app-mode .customize-toolbar,
+html.app-mode .back-to-top,
+html.app-mode .back-to-games {
+  display: none !important;
+}
+
 
 html {
   scroll-behavior: smooth;

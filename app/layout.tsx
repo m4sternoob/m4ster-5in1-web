@@ -8,6 +8,7 @@ import CustomizeToolbar from "./components/CustomizeToolbar";
 import BackToTop from "./components/BackToTop";
 import PwaRegister from "./components/PwaRegister";
 import AutoFullscreen from "./components/AutoFullscreen";
+import AppShell from "./components/app/AppShell";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -137,7 +138,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <BackToTop />
         <PwaRegister />
         <AutoFullscreen />
-        <div className="relative z-10 flex min-h-full flex-col">{children}</div>
+        <div className="relative z-10 flex min-h-full flex-col">
+          <AppShell>{children}</AppShell>
+        </div>
       </body>
     </html>
   );

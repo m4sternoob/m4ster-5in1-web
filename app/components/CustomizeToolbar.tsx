@@ -159,7 +159,7 @@ export default function CustomizeToolbar() {
   );
 
   return (
-    <div className="fixed right-4 bottom-4 z-[9998]">
+    <div className="customize-toolbar fixed right-4 bottom-4 z-[9998]">
       {open && (
         <div className="pop-in mb-3 max-h-[80dvh] w-64 space-y-4 overflow-y-auto overscroll-contain rounded-xl border border-edge bg-panel/95 p-4 shadow-2xl backdrop-blur select-none">
           <div className="flex items-center justify-between">

@@ -30,7 +30,7 @@ export default function BackToTop() {
       type="button"
       onClick={toTop}
       aria-label="Back to top"
-      className="btn-alive pop-in fixed bottom-4 left-4 z-[9997] flex h-12 w-12 items-center justify-center rounded-full border border-edge bg-panel text-arcade shadow-lg hover:border-arcade"
+      className="btn-alive pop-in back-to-top fixed bottom-4 left-4 z-[9997] flex h-12 w-12 items-center justify-center rounded-full border border-edge bg-panel text-arcade shadow-lg hover:border-arcade"
     >
       <svg
         width="20"
