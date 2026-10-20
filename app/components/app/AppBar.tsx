@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef, useState } from "react";
 import FullscreenButton from "../../play/FullscreenButton";
 import AliveLogo from "../AliveLogo";
 import { useAppMode } from "./AppModeProvider";
@@ -100,6 +99,7 @@ export default function AppBar() {
     useAppMode();
   const shown = muted ? 0 : volume;
   const [volOpen, setVolOpen] = useState(false);
+  const clusterRef = useRef<HTMLDivElement>(null);
 
   /* The dropdown is a small-screen-only affordance; close it on Escape
    * so it never lingers over a game. */
@@ -110,6 +110,28 @@ export default function AppBar() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, [volOpen]);
+
+  /* Tap-away close, without an overlay element. A full-screen layer —
+     even portaled to <body> under the header's stacking context —
+     hit-tests ABOVE the panel, because the panel overflows the
+     header's box; on touch devices the slider's drag then landed on
+     the layer, got cancelled, and the volume never moved. A document
+     listener intercepts nothing: taps outside the volume cluster
+     close the panel, taps inside it (slider included) pass through
+     to their real targets. */
+  useEffect(() => {
+    if (!volOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (
+        clusterRef.current &&
+        !clusterRef.current.contains(e.target as Node)
+      ) {
+        setVolOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", onDown);
+    return () => document.removeEventListener("pointerdown", onDown);
   }, [volOpen]);
 
   return (
@@ -150,22 +172,10 @@ export default function AppBar() {
           </div>
         </div>
 
-        <div className="relative flex shrink-0 items-center gap-1.5 sm:gap-2">
-          {/* Tap-away layer for the dropdown. Portaled to <body>: the
-              header's backdrop-blur makes it the containing block for
-              fixed descendants, so an in-header layer would only ever
-              cover the bar itself, not the page. */}
-          {volOpen &&
-            createPortal(
-              <button
-                type="button"
-                aria-hidden="true"
-                tabIndex={-1}
-                onClick={() => setVolOpen(false)}
-                className="fixed inset-0 z-40 cursor-default bg-transparent sm:hidden"
-              />,
-              document.body,
-            )}
+        <div
+          ref={clusterRef}
+          className="relative flex shrink-0 items-center gap-1.5 sm:gap-2"
+        >
           <div className="relative z-50 flex items-center gap-1.5 sm:gap-2">
             <button
               type="button"
@@ -220,7 +230,7 @@ export default function AppBar() {
                 value={Math.round(shown * 100)}
                 onChange={(e) => setVolume(Number(e.target.value) / 100)}
                 aria-label="Music volume"
-                className="h-1.5 w-full cursor-pointer accent-arcade"
+                className="h-1.5 w-full cursor-pointer touch-pan-y accent-arcade"
               />
             </div>
           )}
