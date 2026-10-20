@@ -54,7 +54,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="site-navbar fixed inset-x-0 top-0 z-50 border-b border-edge bg-[#12161f]/15 pt-[env(safe-area-inset-top)] backdrop-blur-md">
+    <header className="site-navbar fixed inset-x-0 top-0 z-50 border-b border-edge bg-[#12161f]/80 pt-[env(safe-area-inset-top)] backdrop-blur-md">
       <nav className="flex flex-row-reverse items-center justify-between gap-4 px-4 py-4 sm:flex-row sm:px-6">
         <Link
           href="/"
