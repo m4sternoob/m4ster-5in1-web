@@ -115,12 +115,12 @@ export default function AppLauncher() {
         {GAMES.map((g, i) => (
           <div
             key={g.href}
-            className="pop-in"
+            className="pop-in h-full"
             style={{ "--pop-delay": `${220 + i * 70}ms` } as React.CSSProperties}
           >
             <Link
               href={g.href}
-              className="card-alive group block rounded-2xl border border-edge bg-panel p-5"
+              className="card-alive group block h-full flex flex-col rounded-2xl border border-edge bg-panel p-5"
             >
               <div className="float-slow flex justify-center" style={{ color: g.accent }}>
                 {g.art}

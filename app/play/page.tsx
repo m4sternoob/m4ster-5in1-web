@@ -80,10 +80,10 @@ export default function PlayPage() {
 
           <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {GAMES.map((g, i) => (
-              <Reveal key={g.href} delay={220 + i * 70}>
+              <Reveal key={g.href} delay={220 + i * 70} className="h-full">
                 <Link
                   href={g.href}
-                  className="card-alive group block rounded-2xl border border-edge bg-panel p-5"
+                  className="card-alive group block h-full flex flex-col rounded-2xl border border-edge bg-panel p-5"
                 >
                   <div className="float-slow text-4xl">{g.icon}</div>
                   <h2 className="mt-3 font-bold text-white group-hover:text-arcade">
