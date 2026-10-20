@@ -1,10 +1,26 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { detectAppMode } from "../lib/appMode";
 
 /* Install App button — triggers the PWA install prompt.
    Home page Download section ONLY. Auto-hides ~5.5s after it appears if
-   untouched, and hides permanently once the app is installed. */
+   untouched, and hides permanently once the app is installed. Never
+   renders at all inside the app shells (Tauri / Capacitor / installed
+   PWA) — an app does not need an install button. */
+
+/** True only on a real iOS device (iPhone / iPad / iPod). iPadOS 13+
+    reports a Mac user agent, so it is separated by touch points. The
+    Share-sheet hint is meaningless anywhere else and must never appear
+    on desktop or in the Windows shell. */
+function isIosDevice(): boolean {
+  const ua = window.navigator.userAgent;
+  if (/iPhone|iPad|iPod/.test(ua)) return true;
+  return (
+    window.navigator.platform === "MacIntel" &&
+    window.navigator.maxTouchPoints > 1
+  );
+}
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -14,11 +30,20 @@ interface BeforeInstallPromptEvent extends Event {
 export default function InstallApp() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
+  const [inApp, setInApp] = useState(false);
   const [iosHint, setIosHint] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
+    // Belt and braces: AppShell normally swaps this component out in
+    // app mode, but if it ever mounts inside a shell it stays hidden —
+    // no button, and never the iOS hint.
+    if (detectAppMode()) {
+      setInApp(true);
+      return;
+    }
+
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       window.matchMedia("(display-mode: fullscreen)").matches ||
@@ -61,11 +86,14 @@ export default function InstallApp() {
       setDeferred(null);
       return;
     }
-    // No prompt available (iOS Safari): show the share-sheet hint.
-    setIosHint((v) => !v);
+    // No prompt available: the Share-sheet hint is iOS-only. On any
+    // other platform without a prompt there is nothing useful to show.
+    if (isIosDevice()) {
+      setIosHint((v) => !v);
+    }
   }, [deferred]);
 
-  if (installed || dismissed) return null;
+  if (inApp || installed || dismissed) return null;
 
   return (
     <div className="flex flex-col items-center gap-3">
