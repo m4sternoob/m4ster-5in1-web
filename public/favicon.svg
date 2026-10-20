@@ -1,24 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="5IN1">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="M4ster-5IN1">
   <defs>
-    <linearGradient id="fav51bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0b0e14"/>
-      <stop offset="1" stop-color="#070a10"/>
-    </linearGradient>
-    <linearGradient id="fav51" x1="0" y1="0" x2="1" y2="0">
+    <linearGradient id="flow51" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0" stop-color="#e9d5ff"/>
-      <stop offset="1" stop-color="#22d3ee"/>
+      <stop offset="0.5" stop-color="#22d3ee"/>
+      <stop offset="1" stop-color="#818cf8"/>
     </linearGradient>
-    <filter id="favneon" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="2.5" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
+    <path id="mark" d="M 26 108 L 26 34 C 34 46, 42 58, 50 70 C 58 58, 66 46, 74 34 L 74 108 M 130 34 L 130 108 M 130 40 L 100 82 L 144 82 M 220 46 C 216 36, 206 31, 194 33 C 180 36, 178 47, 188 53 C 200 60, 216 66, 215 82 C 214 97, 200 107, 186 105 C 176 103, 169 99, 167 93 M 245 32 L 283 32 M 264 32 L 264 108 M 349 34 L 311 34 L 311 108 L 347 108 M 311 70 L 337 70 M 379 108 L 379 32 L 405 32 C 419 32, 419 64, 405 64 L 379 64 M 401 64 L 421 108 M 447 70 L 469 70 M 504 104 C 520 111, 538 106, 543 93 C 548 81, 538 71, 522 68 C 508 65, 499 59, 497 49 L 495 37 C 494.5 31, 497 28, 502 28 L 548 28 M 585 32 L 585 108 M 625 108 L 625 30 L 685 108 L 685 30 C 694 31, 701 36, 706 43 L 725 30 L 725 108 C 725 114, 718 117, 708 114"/>
+    <filter id="markglow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6"/>
     </filter>
+    <clipPath id="clip1"><rect x="51" y="107.94" width="410" height="135.06"/></clipPath>
+    <clipPath id="clip2"><rect x="130.59" y="269" width="250.82" height="135.06"/></clipPath>
   </defs>
-  <rect width="64" height="64" rx="14" fill="url(#fav51bg)"/>
-  <path d="M 22 50 C 30 54, 42 51, 45 43 C 48 36, 42 31, 33 30 C 25 29, 20 26, 19 21 L 18 17 C 18 15, 19 14, 21 14 L 44 14"
-        fill="none" stroke="url(#fav51)" stroke-width="8"
-        stroke-linecap="round" stroke-linejoin="round" filter="url(#favneon)"/>
+  <rect width="512" height="512" rx="112" fill="#04060a"/>
+  <g clip-path="url(#clip1)"><g transform="translate(51 107.94) scale(0.96) translate(-10 0)"><use href="#mark" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="url(#flow51)" stroke-width="9" filter="url(#markglow)"/><use href="#mark" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#000000" stroke-width="16"/><use href="#mark" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="url(#flow51)" stroke-width="9"/></g></g>
+  <g clip-path="url(#clip2)"><g transform="translate(130.59 269) scale(0.96) translate(-480 0)"><use href="#mark" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="url(#flow51)" stroke-width="9" filter="url(#markglow)"/><use href="#mark" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#000000" stroke-width="16"/><use href="#mark" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="url(#flow51)" stroke-width="9"/></g></g>
 </svg>

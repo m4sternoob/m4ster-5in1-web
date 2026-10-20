@@ -1,5 +1,5 @@
 // 5IN1 service worker — offline-first caching for the static export.
-const CACHE = "5in1-v1";
+const CACHE = "5in1-v2";
 const CORE = ["/", "/play/", "/manifest.json", "/offline.html"];
 
 // Install: pre-cache the app shell.
