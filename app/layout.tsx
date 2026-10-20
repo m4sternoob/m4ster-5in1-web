@@ -8,6 +8,7 @@ import CustomizeToolbar from "./components/CustomizeToolbar";
 import BackToTop from "./components/BackToTop";
 import PwaRegister from "./components/PwaRegister";
 import AutoFullscreen from "./components/AutoFullscreen";
+import OrientationGuard from "./components/OrientationGuard";
 import AppShell from "./components/app/AppShell";
 
 const geistSans = Geist({
@@ -131,6 +132,29 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
         />
+        <div className="rotate-overlay" role="alert">
+          <svg
+            className="rotate-overlay-glyph"
+            viewBox="0 0 48 48"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M34.3 11.7 A16 16 0 1 0 39.8 26.8" />
+            <path d="M35.6 30.2 L39.8 26.8 L44 30.2" />
+            <rect x="18.5" y="11" width="11" height="24" rx="2.8" />
+            <path d="M22.5 31.5h3" />
+          </svg>
+          <p className="rotate-overlay-title">Portrait only</p>
+          <p className="rotate-overlay-text">
+            M4ster-5IN1 is built for portrait — rotate your device to keep
+            playing.
+          </p>
+          <div className="rgb-sep rotate-overlay-sep" aria-hidden="true" />
+        </div>
         <AuraBackground />
         <TileGrid />
         <OrbCursor />
@@ -138,6 +162,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <BackToTop />
         <PwaRegister />
         <AutoFullscreen />
+        <OrientationGuard />
         <div className="relative z-10 flex min-h-full flex-col">
           <AppShell>{children}</AppShell>
         </div>
