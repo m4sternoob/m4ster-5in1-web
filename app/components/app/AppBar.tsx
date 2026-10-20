@@ -1,13 +1,19 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import FullscreenButton from "../../play/FullscreenButton";
 import AliveLogo from "../AliveLogo";
 import { useAppMode } from "./AppModeProvider";
 
 /* The app shell's always-visible bar. Left: back (one step inside the
  * app, or the exit overlay at the root) and menu (launcher home).
- * Right: music volume + mute, fullscreen, quit. Sits above the live
- * background with a blur so games scroll underneath it cleanly. */
+ * Center: the logo, width-capped on small screens so it scales down
+ * instead of spilling over its neighbours. Right: music volume + mute,
+ * fullscreen, quit. On narrow screens the volume slider leaves the bar
+ * and drops into a panel under the speaker button — the bar itself only
+ * ever holds buttons. Sits above the live background with a blur so
+ * games scroll underneath it cleanly. */
 
 const iconProps = {
   width: 17,
@@ -55,6 +61,25 @@ function VolumeIcon({ muted }: { muted: boolean }) {
   );
 }
 
+function ChevronIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      width={14}
+      height={14}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
 function PowerIcon() {
   return (
     <svg {...iconProps} aria-hidden="true">
@@ -67,17 +92,35 @@ function PowerIcon() {
 const barBtn =
   "btn-alive flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-edge bg-panel/80 text-slate-200 transition-colors hover:border-arcade hover:text-arcade";
 
+const chevronBtn =
+  "btn-alive flex h-10 w-7 shrink-0 items-center justify-center rounded-lg border border-edge bg-panel/80 text-slate-300 transition-colors hover:border-arcade hover:text-arcade sm:hidden";
+
 export default function AppBar() {
   const { goBack, goHome, setExitOpen, volume, muted, setVolume, toggleMute } =
     useAppMode();
   const shown = muted ? 0 : volume;
+  const [volOpen, setVolOpen] = useState(false);
+
+  /* The dropdown is a small-screen-only affordance; close it on Escape
+   * so it never lingers over a game. */
+  useEffect(() => {
+    if (!volOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setVolOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [volOpen]);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-edge bg-[#12161f]/65 pt-[env(safe-area-inset-top)] backdrop-blur-md">
-      <div className="flex h-14 items-center gap-2 px-3 sm:gap-3 sm:px-4">
+      <div className="flex h-14 items-center gap-1.5 px-2.5 sm:gap-3 sm:px-4">
         <button
           type="button"
-          onClick={goBack}
+          onClick={() => {
+            setVolOpen(false);
+            goBack();
+          }}
           aria-label="Back"
           title="Back"
           className={barBtn}
@@ -86,7 +129,10 @@ export default function AppBar() {
         </button>
         <button
           type="button"
-          onClick={goHome}
+          onClick={() => {
+            setVolOpen(false);
+            goHome();
+          }}
           aria-label="Game menu"
           title="Game menu"
           className={barBtn}
@@ -94,37 +140,99 @@ export default function AppBar() {
           <MenuIcon />
         </button>
 
-        <div className="mx-1 flex min-w-0 flex-1 items-center justify-center">
-          <AliveLogo size="sm" />
+        {/* Logo: capped on small screens and shrunk by its container —
+            flex-1 + min-w-0 means it takes only the space the buttons
+            leave, and the svg scales to that width instead of painting
+            over the controls beside it. */}
+        <div className="flex min-w-0 flex-1 items-center justify-center">
+          <div className="w-full max-w-[104px] min-[400px]:max-w-[120px] sm:w-auto sm:max-w-none [&>span]:block sm:[&>span]:inline-block [&_svg]:w-full sm:[&_svg]:w-auto">
+            <AliveLogo size="sm" />
+          </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-          <button
-            type="button"
-            onClick={toggleMute}
-            aria-label={muted ? "Unmute music" : "Mute music"}
-            aria-pressed={muted}
-            title={muted ? "Unmute music" : "Mute music"}
-            className={barBtn}
-          >
-            <VolumeIcon muted={muted || volume === 0} />
-          </button>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={1}
-            value={Math.round(shown * 100)}
-            onChange={(e) => setVolume(Number(e.target.value) / 100)}
-            aria-label="Music volume"
-            className="h-1.5 w-16 cursor-pointer accent-arcade sm:w-24"
-          />
+        <div className="relative flex shrink-0 items-center gap-1.5 sm:gap-2">
+          {/* Tap-away layer for the dropdown. Portaled to <body>: the
+              header's backdrop-blur makes it the containing block for
+              fixed descendants, so an in-header layer would only ever
+              cover the bar itself, not the page. */}
+          {volOpen &&
+            createPortal(
+              <button
+                type="button"
+                aria-hidden="true"
+                tabIndex={-1}
+                onClick={() => setVolOpen(false)}
+                className="fixed inset-0 z-40 cursor-default bg-transparent sm:hidden"
+              />,
+              document.body,
+            )}
+          <div className="relative z-50 flex items-center gap-1.5 sm:gap-2">
+            <button
+              type="button"
+              onClick={toggleMute}
+              aria-label={muted ? "Unmute music" : "Mute music"}
+              aria-pressed={muted}
+              title={muted ? "Unmute music" : "Mute music"}
+              className={barBtn}
+            >
+              <VolumeIcon muted={muted || volume === 0} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setVolOpen((v) => !v)}
+              aria-label="Volume slider"
+              aria-expanded={volOpen}
+              aria-haspopup="true"
+              title="Volume"
+              className={chevronBtn}
+            >
+              <ChevronIcon open={volOpen} />
+            </button>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={1}
+              value={Math.round(shown * 100)}
+              onChange={(e) => setVolume(Number(e.target.value) / 100)}
+              aria-label="Music volume"
+              className="hidden h-1.5 w-24 cursor-pointer accent-arcade sm:block"
+            />
+          </div>
+
+          {volOpen && (
+            <div
+              role="group"
+              aria-label="Music volume"
+              className="absolute right-0 top-[calc(100%+14px)] z-50 w-48 rounded-xl border border-edge bg-[#12161f] p-3 shadow-xl shadow-black/50 sm:hidden"
+            >
+              <div className="mb-2 flex items-center justify-between text-[11px] font-medium uppercase tracking-wider text-slate-400">
+                <span>Music</span>
+                <span className="text-slate-200">
+                  {Math.round(shown * 100)}%
+                </span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={1}
+                value={Math.round(shown * 100)}
+                onChange={(e) => setVolume(Number(e.target.value) / 100)}
+                aria-label="Music volume"
+                className="h-1.5 w-full cursor-pointer accent-arcade"
+              />
+            </div>
+          )}
         </div>
 
         <FullscreenButton />
         <button
           type="button"
-          onClick={() => setExitOpen(true)}
+          onClick={() => {
+            setVolOpen(false);
+            setExitOpen(true);
+          }}
           aria-label="Quit app"
           title="Quit"
           className={`${barBtn} hover:border-rose-400 hover:text-rose-300`}
