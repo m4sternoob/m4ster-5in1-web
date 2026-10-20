@@ -627,11 +627,11 @@ export default function SnakeGame() {
       {/* D-pad for touch screens — red, 20% opacity, above overlays */}
       <div className="relative z-20 mx-auto -mt-1.5 grid w-36 grid-cols-3 gap-1.5 sm:hidden">
         <div />
-        <button type="button" aria-label="Up" onTouchStart={() => steer(DIRS.up)} onClick={() => steer(DIRS.up)} className="btn-alive rounded-lg border border-red-500/40 bg-red-500/20 py-2 text-lg text-red-300">↑</button>
+        <button type="button" aria-label="Up" onTouchStart={() => steer(DIRS.up)} onClick={() => steer(DIRS.up)} className="btn-alive touch-none rounded-lg border border-red-500/40 bg-red-500/20 py-2 text-lg text-red-300 select-none">↑</button>
         <div />
-        <button type="button" aria-label="Left" onTouchStart={() => steer(DIRS.left)} onClick={() => steer(DIRS.left)} className="btn-alive rounded-lg border border-red-500/40 bg-red-500/20 py-2 text-lg text-red-300">←</button>
-        <button type="button" aria-label="Down" onTouchStart={() => steer(DIRS.down)} onClick={() => steer(DIRS.down)} className="btn-alive rounded-lg border border-red-500/40 bg-red-500/20 py-2 text-lg text-red-300">↓</button>
-        <button type="button" aria-label="Right" onTouchStart={() => steer(DIRS.right)} onClick={() => steer(DIRS.right)} className="btn-alive rounded-lg border border-red-500/40 bg-red-500/20 py-2 text-lg text-red-300">→</button>
+        <button type="button" aria-label="Left" onTouchStart={() => steer(DIRS.left)} onClick={() => steer(DIRS.left)} className="btn-alive touch-none rounded-lg border border-red-500/40 bg-red-500/20 py-2 text-lg text-red-300 select-none">←</button>
+        <button type="button" aria-label="Down" onTouchStart={() => steer(DIRS.down)} onClick={() => steer(DIRS.down)} className="btn-alive touch-none rounded-lg border border-red-500/40 bg-red-500/20 py-2 text-lg text-red-300 select-none">↓</button>
+        <button type="button" aria-label="Right" onTouchStart={() => steer(DIRS.right)} onClick={() => steer(DIRS.right)} className="btn-alive touch-none rounded-lg border border-red-500/40 bg-red-500/20 py-2 text-lg text-red-300 select-none">→</button>
       </div>
       {alive && !running ? (
         <div className="pop-in mt-4 text-center" style={{ ["--pop-delay" as string]: "100ms" }}>
