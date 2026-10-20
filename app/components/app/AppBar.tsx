@@ -73,7 +73,7 @@ export default function AppBar() {
   const shown = muted ? 0 : volume;
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-edge bg-ink/85 pt-[env(safe-area-inset-top)] backdrop-blur-md">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-edge bg-[#12161f]/15 pt-[env(safe-area-inset-top)] backdrop-blur-md">
       <div className="flex h-14 items-center gap-2 px-3 sm:gap-3 sm:px-4">
         <button
           type="button"
