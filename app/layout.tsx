@@ -73,10 +73,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: SITE_URL,
   },
-  icons: {
-    icon: "/favicon.svg",
-    apple: "/apple-icon.png",
-  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
