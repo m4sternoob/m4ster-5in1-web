@@ -5,6 +5,7 @@ import {
   WINDOWS_DOWNLOAD_URL,
   MAC_DOWNLOAD_URL,
   ANDROID_DOWNLOAD_URL,
+  RELEASE_VERSION,
   SYS_REQUIREMENTS,
 } from "../data/site";
 
@@ -64,9 +65,12 @@ export default function Download() {
                 </p>
                 <a
                   href={p.href}
-                  className="btn-alive download-btn mt-6 inline-block rounded-xl bg-arcade px-8 py-3 text-base font-bold text-ink shadow-lg shadow-cyan-500/20 hover:bg-cyan-300"
+                  className="btn-alive download-btn mt-6 inline-flex flex-col items-center rounded-xl bg-arcade px-8 py-3 text-base font-bold text-ink shadow-lg shadow-cyan-500/20 hover:bg-cyan-300"
                 >
-                  {p.cta}
+                  <span>{p.cta}</span>
+                  <span className="text-[11px] leading-tight font-semibold tracking-wide opacity-70">
+                    {RELEASE_VERSION}
+                  </span>
                 </a>
               </div>
             </Reveal>
