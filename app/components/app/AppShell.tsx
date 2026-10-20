@@ -40,10 +40,26 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [appMode, setAppMode] = useState(false);
 
   useIsoLayoutEffect(() => {
-    if (detectAppMode()) {
+    let engaged = false;
+    const engage = () => {
+      if (engaged || !detectAppMode()) return;
+      engaged = true;
       document.documentElement.classList.add("app-mode");
       setAppMode(true);
-    }
+    };
+    engage();
+    /* The user-agent and installed-PWA signals are synchronous, but a
+       native bridge can in principle be injected after first paint.
+       Re-check on load and on two short retries so a late bridge still
+       flips the shell on instead of leaving the website up. */
+    window.addEventListener("load", engage);
+    const t1 = window.setTimeout(engage, 400);
+    const t2 = window.setTimeout(engage, 1500);
+    return () => {
+      window.removeEventListener("load", engage);
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
   }, []);
 
   if (!appMode) return <>{children}</>;

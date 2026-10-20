@@ -1,8 +1,9 @@
 /* App-mode detection and native-bridge helpers.
  *
  * "App mode" means the site is running as an installed app rather than a
- * plain browser tab: the Tauri desktop shell, the Capacitor mobile shell,
- * or an installed PWA (standalone / fullscreen display mode, incl. iOS
+ * plain browser tab: the Tauri desktop shell (custom user-agent marker,
+ * or the injected Tauri bridges), the Capacitor mobile shell, or an
+ * installed PWA (standalone / fullscreen display mode, incl. iOS
  * home-screen apps). The locked AppShell renders only in app mode; the
  * normal website is completely unaffected.
  *
@@ -36,6 +37,7 @@ declare global {
   interface Window {
     __TAURI__?: TauriGlobal;
     __TAURI_INTERNALS__?: TauriInternals;
+    __TAURI_METADATA__?: unknown;
     Capacitor?: CapacitorGlobal;
   }
   interface Navigator {
@@ -43,11 +45,26 @@ declare global {
   }
 }
 
+/* The Tauri window is configured (src-tauri/tauri.conf.json) to send a
+ * user agent carrying this marker. It is the primary desktop-shell
+ * signal: the UA is set on the webview itself, so it is present on
+ * every page load whether the frontend is bundled or remote — unlike
+ * the injected JS bridges, which did not reach the page in the shipped
+ * v1.0.4 exe (the shell never engaged and the exe showed the website). */
+export const APP_UA_MARKER = "M4sterAppShell";
+
+export function hasAppUserAgent(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return navigator.userAgent.includes(APP_UA_MARKER);
+}
+
 export function isTauri(): boolean {
   if (typeof window === "undefined") return false;
   return (
     window.__TAURI_INTERNALS__ !== undefined ||
-    window.__TAURI__ !== undefined
+    window.__TAURI__ !== undefined ||
+    window.__TAURI_METADATA__ !== undefined ||
+    hasAppUserAgent()
   );
 }
 
@@ -89,7 +106,9 @@ export function isInstalledPwa(): boolean {
 
 /** True when the app should render the locked app shell. */
 export function detectAppMode(): boolean {
-  return isTauri() || isCapacitor() || isInstalledPwa();
+  return (
+    hasAppUserAgent() || isTauri() || isCapacitor() || isInstalledPwa()
+  );
 }
 
 /** Pathnames reachable inside the locked shell. Everything else — and
