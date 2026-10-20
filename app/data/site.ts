@@ -7,10 +7,12 @@ export const GITHUB_URL = `https://github.com/${GITHUB_USER}/${REPO}`;
 export const RELEASES_URL = `${GITHUB_URL}/releases`;
 
 /* Direct binary downloads (latest release) — buttons link straight to the
-   files, not the releases page. Bump the tag/filenames on new releases. */
-export const WINDOWS_DOWNLOAD_URL = `${GITHUB_URL}/releases/download/v1.0.10/5IN1_0.1.0_x64-setup.exe`;
-export const MAC_DOWNLOAD_URL = `${GITHUB_URL}/releases/download/v1.0.10/5IN1_0.1.0_aarch64.dmg`;
-export const ANDROID_DOWNLOAD_URL = `${GITHUB_URL}/releases/download/v1.0.10/app-debug.apk`;
+   files, not the releases page. Bump RELEASE_VERSION on new releases; the
+   URLs and the version label on each download button both read from it. */
+export const RELEASE_VERSION = "v1.0.11";
+export const WINDOWS_DOWNLOAD_URL = `${GITHUB_URL}/releases/download/${RELEASE_VERSION}/5IN1_0.1.0_x64-setup.exe`;
+export const MAC_DOWNLOAD_URL = `${GITHUB_URL}/releases/download/${RELEASE_VERSION}/5IN1_0.1.0_aarch64.dmg`;
+export const ANDROID_DOWNLOAD_URL = `${GITHUB_URL}/releases/download/${RELEASE_VERSION}/app-debug.apk`;
 
 export const CONTACT_EMAIL = "xyaz@gmail.com";
 
