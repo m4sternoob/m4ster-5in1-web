@@ -260,7 +260,7 @@ export default function Connect4Game() {
         ))}
       </div>
 
-      <div className="pop-in rounded-2xl border border-edge bg-panel p-3" style={{ "--pop-delay": "140ms" } as CSSProperties}>
+      <div className="pop-in touch-manipulation rounded-2xl border border-edge bg-panel p-3" style={{ "--pop-delay": "140ms" } as CSSProperties}>
         {/* Column tap targets with ghost disc preview */}
         <div className="mb-1 grid grid-cols-7 gap-1.5" onMouseLeave={() => setHoverCol(null)}>
           {Array.from({ length: COLS }, (_, c) => {

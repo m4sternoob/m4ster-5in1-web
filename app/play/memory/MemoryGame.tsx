@@ -111,7 +111,7 @@ export default function MemoryGame() {
       </div>
 
       <div
-        className="grid gap-2 [perspective:1200px]"
+        className="grid touch-manipulation gap-2 [perspective:1200px]"
         style={{ gridTemplateColumns: `repeat(${size.cols}, 1fr)` }}
         key={dealKey}
       >

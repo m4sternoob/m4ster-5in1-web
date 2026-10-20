@@ -171,7 +171,7 @@ export default function TicTacToeDemo() {
       </p>
 
       <div className="pop-in relative mx-auto mt-8 w-full sm:w-72" style={{ "--pop-delay": "220ms" } as CSSProperties}>
-        <div className="grid grid-cols-3 gap-2" role="grid" aria-label="Tic-Tac-Toe board">
+        <div className="grid touch-manipulation grid-cols-3 gap-2" role="grid" aria-label="Tic-Tac-Toe board">
           {board.map((cell, i) => (
             <button
               key={i}
