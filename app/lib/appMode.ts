@@ -111,6 +111,17 @@ export function detectAppMode(): boolean {
   );
 }
 
+/** True inside a native shell (Tauri desktop / Capacitor mobile).
+    Unlike detectAppMode(), an installed web PWA is NOT a native
+    shell: it keeps full PWA behavior, service worker included. Used
+    to keep service workers out of the shells — a worker registered
+    in a shell webview persists across app upgrades and can pin the
+    previous build's HTML in front of a newer bundle, whose hashed
+    assets then 404 (the v1.0.6 exe rendered with no CSS/JS). */
+export function isNativeShell(): boolean {
+  return hasAppUserAgent() || isTauri() || isCapacitor();
+}
+
 /** Pathnames reachable inside the locked shell. Everything else — and
     every external origin — is blocked by the shell's click guard. */
 export function isAllowedAppPath(pathname: string): boolean {
