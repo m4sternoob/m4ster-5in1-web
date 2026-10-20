@@ -32,6 +32,11 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+      - name: Apply launcher icons
+        run: |
+          unzip -o android-res.zip -d /tmp/icons
+          rm -f android/app/src/main/res/drawable/ic_launcher_foreground.xml android/app/src/main/res/drawable/ic_launcher_background.xml
+          cp -r /tmp/icons/android-res/. android/app/src/main/res/
 
 
       - uses: actions/setup-java@v4
