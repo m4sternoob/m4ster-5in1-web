@@ -1,21 +1,30 @@
 "use client";
 
-/* Shared online-multiplayer room manager (PeerJS, host-authoritative).
+/* Shared online-multiplayer room manager (Trystero, host-authoritative).
    One hook drives every game's online mode: the host creates a room
    with a short code, the guest joins by code or invite link, both use
    temporary session names (no accounts, no sign-in). The host owns the
    game state — it validates every move through the game's engine and
    broadcasts the resulting state; the guest only sends move intents.
 
-   Wire protocol (JSON over the PeerJS data connection):
+   Transport: Trystero's nostr strategy. The two browsers rendezvous
+   through public Nostr relays — plain secure-WebSocket endpoints
+   (no broker, no server of ours) — and then talk over a direct
+   WebRTC data channel. This replaced a PeerJS build whose public
+   cloud broker repeatedly failed to make host registrations
+   discoverable to guests ("Room not found" for rooms that were
+   demonstrably open); the torrent strategy that briefly followed
+   failed the same live test when its WebTorrent trackers never
+   rendezvoused the peers.
+
+   Wire protocol (JSON over the data channel):
      guest -> host : hello {name} | ready {ready} | name {name}
                      move {move} | tolobby (rematch request) | leave
      host  -> guest: lobby {host, guest, phase} | start {state}
                      state {state, phase} | tolobby | leave        */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type Peer from "peerjs";
-import type { DataConnection, PeerOptions } from "peerjs";
+import type { Room } from "trystero";
 import { cleanName } from "./names";
 
 export type MpRole = "host" | "guest";
@@ -49,7 +58,10 @@ export function generateRoomCode(): string {
   return code;
 }
 
-export function peerIdFor(game: string, code: string): string {
+/* Trystero room id for a game + room code. Derived from both so a
+   Tic-Tac-Toe room and a Connect 4 room (or two different codes) can
+   never collide in the same relay set. */
+export function roomIdFor(game: string, code: string): string {
   return `m4ster5in1-${game}-${code.toLowerCase()}`;
 }
 
@@ -68,12 +80,28 @@ export function inviteLinkFor(code: string): string {
   return `${window.location.origin}${window.location.pathname}?room=${code}`;
 }
 
-/* ICE servers for the WebRTC data channel. The PeerJS defaults are
-   STUN-only, which cannot punch through strict NATs or networks that
-   block UDP — peers signal fine, then the channel never opens. The
-   TURN relays below (Open Relay Project, free public credentials)
-   carry the channel over TCP/TLS when direct paths fail. One shared
-   list for every Peer in this module — no per-game copies. */
+/* Trystero app id — every build of this app rendezvouses in this
+   namespace; bump the suffix to hard-partition incompatible builds. */
+const TRYSTERO_APP_ID = "m4ster-5in1-mp-v1";
+
+/* Nostr relays for rendezvous, passed to Trystero as relayUrls (when
+   set, the whole list is used). Large public relays reachable over
+   plain secure WebSocket — pinned explicitly after the WebTorrent
+   trackers proved unreachable in the live test, rather than leaving
+   the choice to the library's shuffled defaults. */
+const NOSTR_RELAYS = [
+  "wss://relay.damus.io",
+  "wss://nos.lol",
+  "wss://relay.nostr.band",
+  "wss://nostr.mom",
+];
+
+/* ICE servers for the WebRTC data channel, passed to Trystero as
+   rtcConfig. STUN alone cannot punch through strict NATs or networks
+   that block UDP — peers would find each other, then the channel
+   would never open. The TURN relays below (Open Relay Project, free
+   public credentials) carry the channel over TCP/TLS when direct
+   paths fail. One shared list for every room — no per-game copies. */
 const ICE_SERVERS: RTCIceServer[] = [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun.relay.metered.ca:80" },
@@ -99,53 +127,12 @@ const ICE_SERVERS: RTCIceServer[] = [
   },
 ];
 
-/* Broker selection. Default: the public PeerJS cloud — a free shared
-   demo service with no SLA. A self-hosted PeerServer (same protocol,
-   same client) can be swapped in WITHOUT a code change by setting
-   these env vars at build time (e.g. in the Cloudflare Pages project):
-     NEXT_PUBLIC_MP_BROKER_HOST    e.g. "broker.example.com" (required)
-     NEXT_PUBLIC_MP_BROKER_PORT    e.g. "443"        (default: Peer's)
-     NEXT_PUBLIC_MP_BROKER_PATH    e.g. "/peerjs"    (default: "/")
-     NEXT_PUBLIC_MP_BROKER_SECURE  "1"/"0"           (default: "1")
-   Unset = public cloud, exactly as before. */
-function envBrokerOptions(): PeerOptions {
-  const host = process.env.NEXT_PUBLIC_MP_BROKER_HOST;
-  if (!host) return {};
-  const opts: PeerOptions = {
-    host,
-    path: process.env.NEXT_PUBLIC_MP_BROKER_PATH || "/",
-  };
-  const port = process.env.NEXT_PUBLIC_MP_BROKER_PORT;
-  if (port) opts.port = Number(port);
-  const secure = process.env.NEXT_PUBLIC_MP_BROKER_SECURE;
-  opts.secure = secure == null ? true : secure === "1" || secure === "true";
-  return opts;
-}
-
-/* Broker override for local testing (set localStorage "m4ster-mp-peer"
-   to a JSON PeerJS options object). Unset = the env-configured broker
-   above, or the public PeerJS cloud when no env is set either. The ICE
-   config always applies unless an override ships its own. */
-function peerOptions(): PeerOptions {
-  const base: PeerOptions = {
-    config: { iceServers: ICE_SERVERS },
-    ...envBrokerOptions(),
-  };
-  try {
-    const raw = window.localStorage.getItem("m4ster-mp-peer");
-    if (raw) {
-      const override = JSON.parse(raw) as PeerOptions;
-      return {
-        ...base,
-        ...override,
-        config: { ...(base.config ?? {}), ...(override.config ?? {}) },
-      };
-    }
-  } catch {
-    /* fall through to the configured default */
-  }
-  return base;
-}
+/* How long a guest waits for the room's host to appear (relay
+   rendezvous + channel open + first lobby sync) before concluding
+   the room isn't there. Relay discovery is slower than a broker
+   round-trip, so the budget is generous — but it always ends in the
+   clear "Room not found" error, never a silent hang. */
+const JOIN_BUDGET_MS = 20000;
 
 type Wire =
   | { t: "hello"; name: string }
@@ -157,6 +144,9 @@ type Wire =
   | { t: "lobby"; host: MpPlayer; guest: MpPlayer | null; phase: MpPhase }
   | { t: "start"; state: unknown }
   | { t: "state"; state: unknown; phase: MpPhase };
+
+/** Trystero action sender, narrowed to our wire messages. */
+type WireSend = (msg: Wire, targetId?: string) => void;
 
 export interface MpRoom<S, M> {
   phase: MpPhase;
@@ -189,19 +179,24 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
 
   const engineRef = useRef(engine);
   engineRef.current = engine;
-  const peerRef = useRef<Peer | null>(null);
-  const connRef = useRef<DataConnection | null>(null);
+  const roomRef = useRef<Room | null>(null);
+  const wireSendRef = useRef<WireSend | null>(null);
+  /* The counterpart's Trystero peer id: for the host, the peer that
+     claimed the guest slot; for the guest, the host's peer. All wire
+     traffic is targeted at this id — stray peers in the room (there
+     should never be any) are ignored. */
+  const remoteRef = useRef<string | null>(null);
   const roleRef = useRef<MpRole | null>(null);
   const phaseRef = useRef<MpPhase>("idle");
   const lobbyRef = useRef<LobbyState | null>(null);
   const stateRef = useRef<S | null>(null);
   const nameRef = useRef<string>("");
-  const joinTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const joinedRef = useRef(false);
+  const budgetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const iceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const retryRef = useRef(0);
-  /* Bumped on every teardown: async closures (join retries, broker
-     reconnects) capture their generation and bail when it goes stale,
-     so a dead session can never resurrect itself. */
+  /* Bumped on every teardown: async closures (dynamic import, budget
+     timers) capture their generation and bail when it goes stale, so
+     a dead session can never resurrect itself. */
   const sessionRef = useRef(0);
 
   const setPhaseBoth = useCallback((p: MpPhase) => {
@@ -219,15 +214,10 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
     setGameState(s);
   }, []);
 
-  const send = useCallback((msg: Wire) => {
-    const conn = connRef.current;
-    if (conn && conn.open) {
-      try {
-        conn.send(msg);
-      } catch {
-        /* connection died mid-send; close handler reports it */
-      }
-    }
+  const send = useCallback((msg: Wire, targetId?: string) => {
+    const wireSend = wireSendRef.current;
+    if (!wireSend) return;
+    wireSend(msg, targetId ?? remoteRef.current ?? undefined);
   }, []);
 
   const broadcastLobby = useCallback(() => {
@@ -238,22 +228,24 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
 
   const teardown = useCallback(() => {
     sessionRef.current += 1;
-    if (joinTimerRef.current) {
-      clearTimeout(joinTimerRef.current);
-      joinTimerRef.current = null;
+    if (budgetTimerRef.current) {
+      clearTimeout(budgetTimerRef.current);
+      budgetTimerRef.current = null;
     }
     if (iceTimerRef.current) {
       clearTimeout(iceTimerRef.current);
       iceTimerRef.current = null;
     }
-    try {
-      connRef.current?.close();
-    } catch { /* noop */ }
-    try {
-      peerRef.current?.destroy();
-    } catch { /* noop */ }
-    connRef.current = null;
-    peerRef.current = null;
+    const room = roomRef.current;
+    roomRef.current = null;
+    wireSendRef.current = null;
+    remoteRef.current = null;
+    joinedRef.current = false;
+    if (room) {
+      try {
+        void room.leave().catch(() => { /* already gone */ });
+      } catch { /* noop */ }
+    }
   }, []);
 
   const resetAll = useCallback(() => {
@@ -268,44 +260,50 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
     setPeerLeft(false);
   }, [teardown, setLobbyBoth, setStateBoth, setPhaseBoth]);
 
+  /* ---------------- shared transport wiring ---------------- */
+
+  /** ICE loss watcher for one peer connection: "disconnected" gets a
+      grace window to recover, "failed"/"closed" declare the peer
+      lost immediately. (Trystero also reports peer departures itself;
+      both paths funnel into the same lost handler, which is
+      idempotent — the first to fire wins.) */
+  const watchIce = useCallback((peerId: string, onLost: () => void) => {
+    const pc = roomRef.current?.getPeers()[peerId];
+    if (!pc) return;
+    pc.addEventListener("iceconnectionstatechange", () => {
+      const state = pc.iceConnectionState;
+      if (state === "connected" || state === "completed") {
+        if (iceTimerRef.current) {
+          clearTimeout(iceTimerRef.current);
+          iceTimerRef.current = null;
+        }
+      } else if (state === "disconnected") {
+        if (!iceTimerRef.current) {
+          iceTimerRef.current = setTimeout(onLost, 6000);
+        }
+      } else if (state === "failed" || state === "closed") {
+        if (iceTimerRef.current) {
+          clearTimeout(iceTimerRef.current);
+          iceTimerRef.current = null;
+        }
+        onLost();
+      }
+    });
+  }, []);
+
   /* ---------------- host internals ---------------- */
 
-  /** The guest is gone (left, closed, or ICE died): reset to an
+  /** The guest is gone (left, dropped, or ICE died): reset to an
       open lobby waiting for a new guest. */
   const hostGuestGone = useCallback(() => {
     const l = lobbyRef.current;
+    remoteRef.current = null;
     if (!l?.guest) return;
     setPeerLeft(true);
     setLobbyBoth({ host: { ...l.host, ready: false }, guest: null });
     setPhaseBoth("lobby");
     setStateBoth(null);
   }, [setLobbyBoth, setPhaseBoth, setStateBoth]);
-
-  /** ICE loss watcher: "disconnected" gets a grace window to recover,
-      "failed"/"closed" declare the peer lost immediately. */
-  const watchIce = useCallback(
-    (conn: DataConnection, onLost: () => void) => {
-      conn.on("iceStateChanged", (state) => {
-        if (state === "connected" || state === "completed") {
-          if (iceTimerRef.current) {
-            clearTimeout(iceTimerRef.current);
-            iceTimerRef.current = null;
-          }
-        } else if (state === "disconnected") {
-          if (!iceTimerRef.current) {
-            iceTimerRef.current = setTimeout(onLost, 6000);
-          }
-        } else if (state === "failed" || state === "closed") {
-          if (iceTimerRef.current) {
-            clearTimeout(iceTimerRef.current);
-            iceTimerRef.current = null;
-          }
-          onLost();
-        }
-      });
-    },
-    [],
-  );
 
   const hostApplyMove = useCallback(
     (move: M, by: MpRole) => {
@@ -335,48 +333,107 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
     broadcastLobby();
   }, [send, broadcastLobby, setLobbyBoth, setStateBoth, setPhaseBoth]);
 
-  const wireHostConnection = useCallback(
-    (conn: DataConnection) => {
-      connRef.current = conn;
-      conn.on("data", (raw) => {
-        const msg = raw as Wire;
-        const l = lobbyRef.current;
-        if (!l) return;
-        switch (msg.t) {
-          case "hello":
-            setLobbyBoth({ host: l.host, guest: { name: cleanName(msg.name), ready: false } });
-            broadcastLobby();
-            break;
-          case "name":
-            if (l.guest) {
-              setLobbyBoth({ host: l.host, guest: { ...l.guest, name: cleanName(msg.name) } });
-              broadcastLobby();
-            }
-            break;
-          case "ready":
-            if (l.guest) {
-              setLobbyBoth({ host: l.host, guest: { ...l.guest, ready: !!msg.ready } });
-              broadcastLobby();
-            }
-            break;
-          case "move":
-            hostApplyMove(msg.move as M, "guest");
-            break;
-          case "tolobby":
-            hostBackToLobby();
-            break;
-          case "leave":
-            hostGuestGone();
-            break;
+  const hostOnMessage = useCallback(
+    (msg: Wire, peerId: string) => {
+      const l = lobbyRef.current;
+      if (!l) return;
+      if (msg.t === "hello") {
+        // One guest only — a hello from anyone else is ignored while
+        // the slot is taken. A hello from OUR guest just resyncs.
+        if (remoteRef.current && remoteRef.current !== peerId) return;
+        if (l.guest && remoteRef.current !== peerId) return;
+        remoteRef.current = peerId;
+        if (!l.guest) {
+          setLobbyBoth({ host: l.host, guest: { name: cleanName(msg.name), ready: false } });
         }
-      });
-      conn.on("close", () => {
-        if (roleRef.current === "host") hostGuestGone();
-        if (connRef.current === conn) connRef.current = null;
-      });
-      watchIce(conn, hostGuestGone);
+        broadcastLobby();
+        return;
+      }
+      if (peerId !== remoteRef.current) return; // not our guest
+      switch (msg.t) {
+        case "name":
+          if (l.guest) {
+            setLobbyBoth({ host: l.host, guest: { ...l.guest, name: cleanName(msg.name) } });
+            broadcastLobby();
+          }
+          break;
+        case "ready":
+          if (l.guest) {
+            setLobbyBoth({ host: l.host, guest: { ...l.guest, ready: !!msg.ready } });
+            broadcastLobby();
+          }
+          break;
+        case "move":
+          hostApplyMove(msg.move as M, "guest");
+          break;
+        case "tolobby":
+          hostBackToLobby();
+          break;
+        case "leave":
+          hostGuestGone();
+          break;
+      }
     },
-    [broadcastLobby, hostApplyMove, hostBackToLobby, hostGuestGone, setLobbyBoth, setPhaseBoth, setStateBoth, watchIce],
+    [broadcastLobby, hostApplyMove, hostBackToLobby, hostGuestGone, setLobbyBoth],
+  );
+
+  /* ---------------- guest internals ---------------- */
+
+  /** The host is gone. Abrupt drops (peer departed / ICE died) and
+      the host's clean "leave" differ only in whether an error line
+      accompanies the opponent-left state. */
+  const guestHostLost = useCallback(
+    (showError: boolean) => {
+      if (roleRef.current !== "guest" || phaseRef.current === "idle") return;
+      remoteRef.current = null;
+      setPeerLeft(true);
+      if (showError) {
+        setError("Connection to the host was lost.");
+        setStatus("error");
+      }
+      setPhaseBoth("lobby");
+      setStateBoth(null);
+    },
+    [setPhaseBoth, setStateBoth],
+  );
+
+  const guestOnMessage = useCallback(
+    (msg: Wire, peerId: string) => {
+      if (remoteRef.current && peerId !== remoteRef.current) return;
+      switch (msg.t) {
+        case "lobby":
+          if (!joinedRef.current) {
+            /* First contact — the room is real and the host is in it.
+               The join has officially succeeded. */
+            joinedRef.current = true;
+            remoteRef.current = peerId;
+            if (budgetTimerRef.current) {
+              clearTimeout(budgetTimerRef.current);
+              budgetTimerRef.current = null;
+            }
+            setStatus("connected");
+          }
+          setLobbyBoth({ host: msg.host, guest: msg.guest });
+          setPhaseBoth(msg.phase);
+          break;
+        case "start":
+          setStateBoth(msg.state as S);
+          setPhaseBoth("playing");
+          break;
+        case "state":
+          setStateBoth(msg.state as S);
+          setPhaseBoth(msg.phase);
+          break;
+        case "tolobby":
+          setStateBoth(null);
+          setPhaseBoth("lobby");
+          break;
+        case "leave":
+          guestHostLost(false);
+          break;
+      }
+    },
+    [guestHostLost, setLobbyBoth, setPhaseBoth, setStateBoth],
   );
 
   /* ---------------- public actions ---------------- */
@@ -385,98 +442,52 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
     (name: string) => {
       resetAll();
       setError(null);
-      retryRef.current = 0;
       nameRef.current = cleanName(name);
       setRole("host");
       roleRef.current = "host";
       setStatus("connecting");
       setPhaseBoth("connecting");
+      const gen = sessionRef.current;
+      const roomCode = generateRoomCode();
 
-      const attempt = async () => {
-        const { default: PeerCtor } = await import("peerjs");
-        const roomCode = generateRoomCode();
-        const peer = new PeerCtor(peerIdFor(game, roomCode), peerOptions());
-        peerRef.current = peer;
-        /* Registration watchdog: a broker socket that hangs silently
-           (captive portal, firewall dropping packets) produces neither
-           'open' nor 'error' — without this the panel would sit on
-           "Creating room…" forever with nothing wrong on screen. */
-        let opened = false;
-        const regTimer = setTimeout(() => {
-          if (opened || peerRef.current !== peer) return;
-          try { peer.destroy(); } catch { /* noop */ }
-          setError("Could not reach the game server. Check your connection and try again.");
-          setStatus("error");
-          setCode(null);
-          setLobbyBoth(null);
-          setPhaseBoth("idle");
-        }, 10000);
-        /* The lobby is presented ONLY from this handler — i.e. only
-           once the broker has confirmed the registration. Before
-           'open' the room does not exist for guests, and the panel
-           shows "Creating room…", never a code nobody can join. */
-        peer.on("open", () => {
-          if (peerRef.current !== peer) return;
-          opened = true;
-          clearTimeout(regTimer);
-          setStatus("connected");
-          if (lobbyRef.current) {
-            /* Re-registration after a broker-socket drop: the room
-               (and any live guest connection) survived — just resync. */
-            broadcastLobby();
-            return;
-          }
-          setCode(roomCode);
-          setPhaseBoth("lobby");
-          setLobbyBoth({ host: { name: nameRef.current, ready: false }, guest: null });
-        });
-        peer.on("connection", (conn) => {
-          // One guest only — refuse extras.
-          if (connRef.current) {
-            conn.on("open", () => conn.close());
-            return;
-          }
-          wireHostConnection(conn);
-        });
-        /* If the broker socket drops (phone network switch, tab
-           suspension, brief outage), the broker expires this peer id
-           and every guest gets "peer-unavailable" while the lobby
-           still looks open. reconnect() re-registers the SAME id —
-           an established data connection is not touched by it. */
-        peer.on("disconnected", () => {
-          if (peerRef.current !== peer || peer.destroyed) return;
-          setStatus("connecting");
+      void (async () => {
+        const { joinRoom } = await import("trystero/nostr");
+        if (sessionRef.current !== gen) return;
+        const room = joinRoom(
+          {
+            appId: TRYSTERO_APP_ID,
+            relayUrls: NOSTR_RELAYS,
+            rtcConfig: { iceServers: ICE_SERVERS },
+          },
+          roomIdFor(game, roomCode),
+        );
+        roomRef.current = room;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const [sendAction, onAction] = room.makeAction<any>("mp");
+        wireSendRef.current = (msg, targetId) => {
           try {
-            peer.reconnect();
-          } catch { /* 'close' handler below reports the loss */ }
+            void (sendAction(msg, targetId) as Promise<unknown>).catch(() => {
+              /* peer unreachable mid-send; leave handlers report it */
+            });
+          } catch { /* noop */ }
+        };
+        onAction((data: unknown, peerId: string) => hostOnMessage(data as Wire, peerId));
+        room.onPeerJoin((peerId) => {
+          watchIce(peerId, hostGuestGone);
         });
-        peer.on("close", () => {
-          if (peerRef.current !== peer) return;
-          /* Registration is gone for good: never leave a joinable-
-             looking lobby up for a room that no longer exists. */
-          resetAll();
-          setError("Connection to the game server was lost — this room is closed. Create a new room to get a fresh code.");
-          setStatus("error");
+        room.onPeerLeave((peerId) => {
+          if (peerId === remoteRef.current) hostGuestGone();
         });
-        peer.on("error", (err: Error & { type?: string }) => {
-          if (peerRef.current !== peer) return;
-          clearTimeout(regTimer);
-          if (err.type === "unavailable-id" && retryRef.current < 3) {
-            retryRef.current += 1;
-            try { peer.destroy(); } catch { /* noop */ }
-            void attempt();
-            return;
-          }
-          setError("Could not create the room. Check your connection and try again.");
-          setStatus("error");
-          setCode(null);
-          setLobbyBoth(null);
-          setPhaseBoth("idle");
-        });
-      };
-      void attempt();
+        /* No broker registration to wait on: the room exists as soon
+           as we announce on the relays, so the code and lobby go up
+           right away. Guests discover us through the relays. */
+        setStatus("connected");
+        setCode(roomCode);
+        setPhaseBoth("lobby");
+        setLobbyBoth({ host: { name: nameRef.current, ready: false }, guest: null });
+      })();
     },
-    [game, resetAll, broadcastLobby, setLobbyBoth, setPhaseBoth, wireHostConnection],
+    [game, resetAll, hostGuestGone, hostOnMessage, setLobbyBoth, setPhaseBoth, watchIce],
   );
 
   const joinRoom = useCallback(
@@ -493,171 +504,49 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
       const gen = sessionRef.current;
 
       void (async () => {
-        const { default: PeerCtor } = await import("peerjs");
+        const { joinRoom } = await import("trystero/nostr");
         if (sessionRef.current !== gen) return;
-        const peer = new PeerCtor(peerOptions());
-        peerRef.current = peer;
-
-        /* Join attempts retry for ~10s before giving up. A guest who
-           arrives while the host is still registering — or while the
-           host re-registers after a broker-socket drop — gets a fast
-           "peer-unavailable" from the broker even though the room is
-           real; failing instantly on that made live rooms look
-           nonexistent. Only when the whole budget is spent does the
-           guest see "Room not found". */
-        let settled = false;
-        const startedAt = Date.now();
-        const RETRY_BUDGET_MS = 10000;
-        const RETRY_DELAY_MS = 2000;
-        const ATTEMPT_TIMEOUT_MS = 4000;
-
-        const alive = () =>
-          sessionRef.current === gen && peerRef.current === peer && !settled;
-
-        const clearJoinTimer = () => {
-          if (joinTimerRef.current) {
-            clearTimeout(joinTimerRef.current);
-            joinTimerRef.current = null;
-          }
+        const room = joinRoom(
+          {
+            appId: TRYSTERO_APP_ID,
+            relayUrls: NOSTR_RELAYS,
+            rtcConfig: { iceServers: ICE_SERVERS },
+          },
+          roomIdFor(game, roomCode),
+        );
+        roomRef.current = room;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const [sendAction, onAction] = room.makeAction<any>("mp");
+        wireSendRef.current = (msg, targetId) => {
+          try {
+            void (sendAction(msg, targetId) as Promise<unknown>).catch(() => {
+              /* peer unreachable mid-send; leave handlers report it */
+            });
+          } catch { /* noop */ }
         };
-
-        const fail = (msg: string) => {
-          if (!alive()) return;
-          settled = true;
-          clearJoinTimer();
-          clearTimeout(regTimer);
-          setError(msg);
+        onAction((data: unknown, peerId: string) => guestOnMessage(data as Wire, peerId));
+        room.onPeerJoin((peerId) => {
+          watchIce(peerId, () => guestHostLost(true));
+          if (remoteRef.current) return; // already talking to the host
+          remoteRef.current = peerId;
+          send({ t: "hello", name: nameRef.current }, peerId);
+        });
+        room.onPeerLeave((peerId) => {
+          if (peerId === remoteRef.current) guestHostLost(false);
+        });
+        /* Join budget: if the host never appears (wrong code, room
+           closed, relays can't find them), the guest lands on the
+           same clear error as before — never an endless "Joining…". */
+        budgetTimerRef.current = setTimeout(() => {
+          if (sessionRef.current !== gen || joinedRef.current) return;
+          setError("Room not found — check the code and try again.");
           setStatus("error");
           setPhaseBoth("idle");
           teardown();
-        };
-
-        const dropAttempt = () => {
-          const conn = connRef.current;
-          if (conn) {
-            try { conn.close(); } catch { /* noop */ }
-            if (connRef.current === conn) connRef.current = null;
-          }
-        };
-
-        function scheduleRetry() {
-          if (!alive()) return;
-          clearJoinTimer();
-          if (Date.now() - startedAt >= RETRY_BUDGET_MS) {
-            fail("Room not found — check the code and try again.");
-            return;
-          }
-          joinTimerRef.current = setTimeout(attemptConnect, RETRY_DELAY_MS);
-        }
-
-        const wireSession = (conn: DataConnection) => {
-          conn.on("data", (raw) => {
-            const msg = raw as Wire;
-            switch (msg.t) {
-              case "lobby":
-                setLobbyBoth({ host: msg.host, guest: msg.guest });
-                setPhaseBoth(msg.phase);
-                break;
-              case "start":
-                setStateBoth(msg.state as S);
-                setPhaseBoth("playing");
-                break;
-              case "state":
-                setStateBoth(msg.state as S);
-                setPhaseBoth(msg.phase);
-                break;
-              case "tolobby":
-                setStateBoth(null);
-                setPhaseBoth("lobby");
-                break;
-              case "leave":
-                setPeerLeft(true);
-                setPhaseBoth("lobby");
-                setStateBoth(null);
-                break;
-            }
-          });
-          conn.on("close", () => {
-            if (roleRef.current === "guest" && phaseRef.current !== "idle") {
-              setPeerLeft(true);
-              setStatus("error");
-              setPhaseBoth("lobby");
-              setStateBoth(null);
-            }
-          });
-          watchIce(conn, () => {
-            if (roleRef.current === "guest" && phaseRef.current !== "idle") {
-              setPeerLeft(true);
-              setError("Connection to the host was lost.");
-              setStatus("error");
-              setPhaseBoth("lobby");
-              setStateBoth(null);
-            }
-          });
-        };
-
-        function attemptConnect() {
-          if (!alive()) return;
-          if (Date.now() - startedAt >= RETRY_BUDGET_MS) {
-            scheduleRetry();
-            return;
-          }
-          const conn = peer.connect(peerIdFor(game, roomCode), { reliable: true });
-          connRef.current = conn;
-          clearJoinTimer();
-          joinTimerRef.current = setTimeout(() => {
-            if (!alive() || conn.open) return;
-            // No answer from the room within this attempt's window.
-            dropAttempt();
-            scheduleRetry();
-          }, ATTEMPT_TIMEOUT_MS);
-          conn.on("open", () => {
-            if (!alive()) return;
-            settled = true;
-            clearJoinTimer();
-            setStatus("connected");
-            setPhaseBoth("lobby");
-            wireSession(conn);
-            send({ t: "hello", name: nameRef.current });
-          });
-        }
-
-        /* Registration watchdog: if this guest's own peer never
-           reaches the broker (socket hangs silently), no 'open' and
-           no 'error' ever arrive — fail visibly instead of spinning
-           on "Joining…" forever. */
-        const regTimer = setTimeout(() => {
-          fail("Connection problem — check your internet and try again.");
-        }, 9000);
-
-        peer.on("open", () => {
-          if (peerRef.current !== peer) return;
-          clearTimeout(regTimer);
-          attemptConnect();
-        });
-        peer.on("disconnected", () => {
-          if (peerRef.current !== peer || peer.destroyed) return;
-          try {
-            peer.reconnect();
-          } catch { /* noop */ }
-        });
-        peer.on("close", () => {
-          if (peerRef.current !== peer || settled) return;
-          fail("Connection problem — check your internet and try again.");
-        });
-        peer.on("error", (err: Error & { type?: string }) => {
-          if (peerRef.current !== peer || settled) return;
-          if (err.type === "peer-unavailable") {
-            clearJoinTimer();
-            dropAttempt();
-            scheduleRetry();
-          } else {
-            fail("Connection problem — check your internet and try again.");
-          }
-        });
+        }, JOIN_BUDGET_MS);
       })();
     },
-    [game, resetAll, send, setLobbyBoth, setPhaseBoth, setStateBoth, teardown, watchIce],
+    [game, resetAll, guestHostLost, guestOnMessage, send, setPhaseBoth, teardown, watchIce],
   );
 
   const setReady = useCallback(
