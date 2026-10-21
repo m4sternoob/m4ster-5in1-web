@@ -7,12 +7,15 @@
    game state — it validates every move through the game's engine and
    broadcasts the resulting state; the guest only sends move intents.
 
-   Transport: Trystero's torrent strategy. The two browsers rendezvous
-   through public WebTorrent trackers (no broker, no server of ours)
-   and then talk over a direct WebRTC data channel. This replaced a
-   PeerJS build whose public cloud broker repeatedly failed to make
-   host registrations discoverable to guests ("Room not found" for
-   rooms that were demonstrably open).
+   Transport: Trystero's nostr strategy. The two browsers rendezvous
+   through public Nostr relays — plain secure-WebSocket endpoints
+   (no broker, no server of ours) — and then talk over a direct
+   WebRTC data channel. This replaced a PeerJS build whose public
+   cloud broker repeatedly failed to make host registrations
+   discoverable to guests ("Room not found" for rooms that were
+   demonstrably open); the torrent strategy that briefly followed
+   failed the same live test when its WebTorrent trackers never
+   rendezvoused the peers.
 
    Wire protocol (JSON over the data channel):
      guest -> host : hello {name} | ready {ready} | name {name}
@@ -57,7 +60,7 @@ export function generateRoomCode(): string {
 
 /* Trystero room id for a game + room code. Derived from both so a
    Tic-Tac-Toe room and a Connect 4 room (or two different codes) can
-   never collide in the same swarm. */
+   never collide in the same relay set. */
 export function roomIdFor(game: string, code: string): string {
   return `m4ster5in1-${game}-${code.toLowerCase()}`;
 }
@@ -80,6 +83,18 @@ export function inviteLinkFor(code: string): string {
 /* Trystero app id — every build of this app rendezvouses in this
    namespace; bump the suffix to hard-partition incompatible builds. */
 const TRYSTERO_APP_ID = "m4ster-5in1-mp-v1";
+
+/* Nostr relays for rendezvous, passed to Trystero as relayUrls (when
+   set, the whole list is used). Large public relays reachable over
+   plain secure WebSocket — pinned explicitly after the WebTorrent
+   trackers proved unreachable in the live test, rather than leaving
+   the choice to the library's shuffled defaults. */
+const NOSTR_RELAYS = [
+  "wss://relay.damus.io",
+  "wss://nos.lol",
+  "wss://relay.nostr.band",
+  "wss://nostr.mom",
+];
 
 /* ICE servers for the WebRTC data channel, passed to Trystero as
    rtcConfig. STUN alone cannot punch through strict NATs or networks
@@ -112,9 +127,9 @@ const ICE_SERVERS: RTCIceServer[] = [
   },
 ];
 
-/* How long a guest waits for the room's host to appear (tracker
+/* How long a guest waits for the room's host to appear (relay
    rendezvous + channel open + first lobby sync) before concluding
-   the room isn't there. Tracker discovery is slower than a broker
+   the room isn't there. Relay discovery is slower than a broker
    round-trip, so the budget is generous — but it always ends in the
    clear "Room not found" error, never a silent hang. */
 const JOIN_BUDGET_MS = 20000;
@@ -168,7 +183,7 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
   const wireSendRef = useRef<WireSend | null>(null);
   /* The counterpart's Trystero peer id: for the host, the peer that
      claimed the guest slot; for the guest, the host's peer. All wire
-     traffic is targeted at this id — stray peers in the swarm (there
+     traffic is targeted at this id — stray peers in the room (there
      should never be any) are ignored. */
   const remoteRef = useRef<string | null>(null);
   const roleRef = useRef<MpRole | null>(null);
@@ -436,10 +451,14 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
       const roomCode = generateRoomCode();
 
       void (async () => {
-        const { joinRoom } = await import("trystero/torrent");
+        const { joinRoom } = await import("trystero/nostr");
         if (sessionRef.current !== gen) return;
         const room = joinRoom(
-          { appId: TRYSTERO_APP_ID, rtcConfig: { iceServers: ICE_SERVERS } },
+          {
+            appId: TRYSTERO_APP_ID,
+            relayUrls: NOSTR_RELAYS,
+            rtcConfig: { iceServers: ICE_SERVERS },
+          },
           roomIdFor(game, roomCode),
         );
         roomRef.current = room;
@@ -460,8 +479,8 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
           if (peerId === remoteRef.current) hostGuestGone();
         });
         /* No broker registration to wait on: the room exists as soon
-           as we are in the swarm, so the code and lobby go up right
-           away. Guests discover us through the trackers. */
+           as we announce on the relays, so the code and lobby go up
+           right away. Guests discover us through the relays. */
         setStatus("connected");
         setCode(roomCode);
         setPhaseBoth("lobby");
@@ -485,10 +504,14 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
       const gen = sessionRef.current;
 
       void (async () => {
-        const { joinRoom } = await import("trystero/torrent");
+        const { joinRoom } = await import("trystero/nostr");
         if (sessionRef.current !== gen) return;
         const room = joinRoom(
-          { appId: TRYSTERO_APP_ID, rtcConfig: { iceServers: ICE_SERVERS } },
+          {
+            appId: TRYSTERO_APP_ID,
+            relayUrls: NOSTR_RELAYS,
+            rtcConfig: { iceServers: ICE_SERVERS },
+          },
           roomIdFor(game, roomCode),
         );
         roomRef.current = room;
@@ -512,7 +535,7 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
           if (peerId === remoteRef.current) guestHostLost(false);
         });
         /* Join budget: if the host never appears (wrong code, room
-           closed, trackers can't find them), the guest lands on the
+           closed, relays can't find them), the guest lands on the
            same clear error as before — never an endless "Joining…". */
         budgetTimerRef.current = setTimeout(() => {
           if (sessionRef.current !== gen || joinedRef.current) return;
