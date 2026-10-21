@@ -7,15 +7,18 @@
    game state — it validates every move through the game's engine and
    broadcasts the resulting state; the guest only sends move intents.
 
-   Transport: Trystero's nostr strategy. The two browsers rendezvous
-   through public Nostr relays — plain secure-WebSocket endpoints
-   (no broker, no server of ours) — and then talk over a direct
-   WebRTC data channel. This replaced a PeerJS build whose public
-   cloud broker repeatedly failed to make host registrations
-   discoverable to guests ("Room not found" for rooms that were
-   demonstrably open); the torrent strategy that briefly followed
-   failed the same live test when its WebTorrent trackers never
-   rendezvoused the peers.
+   Transport: Trystero's MQTT strategy. The two browsers rendezvous
+   through public MQTT brokers over secure WebSocket — arbitrary-topic
+   publish/subscribe fan-out to live subscribers is a broker's entire
+   function (no server of ours) — and then talk over a direct WebRTC
+   data channel. History: a PeerJS build's public cloud broker
+   repeatedly failed to make host registrations discoverable to
+   guests ("Room not found" for rooms that were demonstrably open);
+   the torrent strategy's WebTorrent trackers never rendezvoused the
+   peers in the live test; and the nostr strategy that followed
+   failed on two real devices (Mac host, phone guest, same error)
+   because the big public Nostr relays don't reliably fan out
+   Trystero's ephemeral event kinds.
 
    Wire protocol (JSON over the data channel):
      guest -> host : hello {name} | ready {ready} | name {name}
@@ -84,16 +87,16 @@ export function inviteLinkFor(code: string): string {
    namespace; bump the suffix to hard-partition incompatible builds. */
 const TRYSTERO_APP_ID = "m4ster-5in1-mp-v1";
 
-/* Nostr relays for rendezvous, passed to Trystero as relayUrls (when
-   set, the whole list is used). Large public relays reachable over
-   plain secure WebSocket — pinned explicitly after the WebTorrent
-   trackers proved unreachable in the live test, rather than leaving
-   the choice to the library's shuffled defaults. */
-const NOSTR_RELAYS = [
-  "wss://relay.damus.io",
-  "wss://nos.lol",
-  "wss://relay.nostr.band",
-  "wss://nostr.mom",
+/* Public MQTT brokers for rendezvous, passed to Trystero as
+   relayUrls (when set, the whole list is used). This is the exact
+   default set Trystero 0.22 ships for its MQTT strategy — pinned
+   explicitly so the rendezvous set can't drift between builds.
+   Three independent public brokers in parallel: any one of them
+   fanning out is enough for the peers to find each other. */
+const MQTT_BROKERS = [
+  "wss://broker.emqx.io:8084/mqtt",
+  "wss://test.mosquitto.org:8081/mqtt",
+  "wss://broker.hivemq.com:8884/mqtt",
 ];
 
 /* ICE servers for the WebRTC data channel, passed to Trystero as
@@ -127,12 +130,13 @@ const ICE_SERVERS: RTCIceServer[] = [
   },
 ];
 
-/* How long a guest waits for the room's host to appear (relay
-   rendezvous + channel open + first lobby sync) before concluding
-   the room isn't there. Relay discovery is slower than a broker
-   round-trip, so the budget is generous — but it always ends in the
-   clear "Room not found" error, never a silent hang. */
-const JOIN_BUDGET_MS = 20000;
+/* How long a guest waits for the room's host to appear (broker
+   connect + subscribe + rendezvous + channel open + first lobby
+   sync) before concluding the room isn't there. Public-broker
+   discovery is slower than a dedicated round-trip, so the budget
+   is generous — but it always ends in the clear "Room not found"
+   error, never a silent hang. */
+const JOIN_BUDGET_MS = 30000;
 
 type Wire =
   | { t: "hello"; name: string }
@@ -451,12 +455,12 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
       const roomCode = generateRoomCode();
 
       void (async () => {
-        const { joinRoom } = await import("trystero/nostr");
+        const { joinRoom } = await import("trystero/mqtt");
         if (sessionRef.current !== gen) return;
         const room = joinRoom(
           {
             appId: TRYSTERO_APP_ID,
-            relayUrls: NOSTR_RELAYS,
+            relayUrls: MQTT_BROKERS,
             rtcConfig: { iceServers: ICE_SERVERS },
           },
           roomIdFor(game, roomCode),
@@ -479,8 +483,8 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
           if (peerId === remoteRef.current) hostGuestGone();
         });
         /* No broker registration to wait on: the room exists as soon
-           as we announce on the relays, so the code and lobby go up
-           right away. Guests discover us through the relays. */
+           as we announce on the brokers, so the code and lobby go up
+           right away. Guests discover us through the brokers. */
         setStatus("connected");
         setCode(roomCode);
         setPhaseBoth("lobby");
@@ -504,12 +508,12 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
       const gen = sessionRef.current;
 
       void (async () => {
-        const { joinRoom } = await import("trystero/nostr");
+        const { joinRoom } = await import("trystero/mqtt");
         if (sessionRef.current !== gen) return;
         const room = joinRoom(
           {
             appId: TRYSTERO_APP_ID,
-            relayUrls: NOSTR_RELAYS,
+            relayUrls: MQTT_BROKERS,
             rtcConfig: { iceServers: ICE_SERVERS },
           },
           roomIdFor(game, roomCode),
@@ -535,7 +539,7 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
           if (peerId === remoteRef.current) guestHostLost(false);
         });
         /* Join budget: if the host never appears (wrong code, room
-           closed, relays can't find them), the guest lands on the
+           closed, brokers can't find them), the guest lands on the
            same clear error as before — never an endless "Joining…". */
         budgetTimerRef.current = setTimeout(() => {
           if (sessionRef.current !== gen || joinedRef.current) return;
