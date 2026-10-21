@@ -15,7 +15,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type Peer from "peerjs";
-import type { DataConnection } from "peerjs";
+import type { DataConnection, PeerOptions } from "peerjs";
 import { cleanName } from "./names";
 
 export type MpRole = "host" | "guest";
@@ -68,6 +68,19 @@ export function inviteLinkFor(code: string): string {
   return `${window.location.origin}${window.location.pathname}?room=${code}`;
 }
 
+/* Broker override for local testing (set localStorage "m4ster-mp-peer"
+   to a JSON PeerJS options object). Unset = the public PeerJS cloud,
+   which is what production uses. */
+function peerOptions(): PeerOptions {
+  try {
+    const raw = window.localStorage.getItem("m4ster-mp-peer");
+    if (raw) return JSON.parse(raw) as PeerOptions;
+  } catch {
+    /* fall through to the cloud default */
+  }
+  return {};
+}
+
 type Wire =
   | { t: "hello"; name: string }
   | { t: "ready"; ready: boolean }
@@ -118,6 +131,7 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
   const stateRef = useRef<S | null>(null);
   const nameRef = useRef<string>("");
   const joinTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const iceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retryRef = useRef(0);
 
   const setPhaseBoth = useCallback((p: MpPhase) => {
@@ -157,6 +171,10 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
       clearTimeout(joinTimerRef.current);
       joinTimerRef.current = null;
     }
+    if (iceTimerRef.current) {
+      clearTimeout(iceTimerRef.current);
+      iceTimerRef.current = null;
+    }
     try {
       connRef.current?.close();
     } catch { /* noop */ }
@@ -180,6 +198,43 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
   }, [teardown, setLobbyBoth, setStateBoth, setPhaseBoth]);
 
   /* ---------------- host internals ---------------- */
+
+  /** The guest is gone (left, closed, or ICE died): reset to an
+      open lobby waiting for a new guest. */
+  const hostGuestGone = useCallback(() => {
+    const l = lobbyRef.current;
+    if (!l?.guest) return;
+    setPeerLeft(true);
+    setLobbyBoth({ host: { ...l.host, ready: false }, guest: null });
+    setPhaseBoth("lobby");
+    setStateBoth(null);
+  }, [setLobbyBoth, setPhaseBoth, setStateBoth]);
+
+  /** ICE loss watcher: "disconnected" gets a grace window to recover,
+      "failed"/"closed" declare the peer lost immediately. */
+  const watchIce = useCallback(
+    (conn: DataConnection, onLost: () => void) => {
+      conn.on("iceStateChanged", (state) => {
+        if (state === "connected" || state === "completed") {
+          if (iceTimerRef.current) {
+            clearTimeout(iceTimerRef.current);
+            iceTimerRef.current = null;
+          }
+        } else if (state === "disconnected") {
+          if (!iceTimerRef.current) {
+            iceTimerRef.current = setTimeout(onLost, 6000);
+          }
+        } else if (state === "failed" || state === "closed") {
+          if (iceTimerRef.current) {
+            clearTimeout(iceTimerRef.current);
+            iceTimerRef.current = null;
+          }
+          onLost();
+        }
+      });
+    },
+    [],
+  );
 
   const hostApplyMove = useCallback(
     (move: M, by: MpRole) => {
@@ -240,25 +295,17 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
             hostBackToLobby();
             break;
           case "leave":
-            setPeerLeft(true);
-            setLobbyBoth({ host: { ...l.host, ready: false }, guest: null });
-            setPhaseBoth("lobby");
-            setStateBoth(null);
+            hostGuestGone();
             break;
         }
       });
       conn.on("close", () => {
-        const l = lobbyRef.current;
-        if (roleRef.current === "host" && l?.guest) {
-          setPeerLeft(true);
-          setLobbyBoth({ host: { ...l.host, ready: false }, guest: null });
-          setPhaseBoth("lobby");
-          setStateBoth(null);
-        }
+        if (roleRef.current === "host") hostGuestGone();
         if (connRef.current === conn) connRef.current = null;
       });
+      watchIce(conn, hostGuestGone);
     },
-    [broadcastLobby, hostApplyMove, hostBackToLobby, setLobbyBoth, setPhaseBoth, setStateBoth],
+    [broadcastLobby, hostApplyMove, hostBackToLobby, hostGuestGone, setLobbyBoth, setPhaseBoth, setStateBoth, watchIce],
   );
 
   /* ---------------- public actions ---------------- */
@@ -277,7 +324,7 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
       const attempt = async () => {
         const { default: PeerCtor } = await import("peerjs");
         const roomCode = generateRoomCode();
-        const peer = new PeerCtor(peerIdFor(game, roomCode));
+        const peer = new PeerCtor(peerIdFor(game, roomCode), peerOptions());
         peerRef.current = peer;
         peer.on("open", () => {
           setCode(roomCode);
@@ -324,7 +371,7 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
 
       void (async () => {
         const { default: PeerCtor } = await import("peerjs");
-        const peer = new PeerCtor();
+        const peer = new PeerCtor(peerOptions());
         peerRef.current = peer;
         peer.on("open", () => {
           const conn = peer.connect(peerIdFor(game, roomCode), { reliable: true });
@@ -377,6 +424,15 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
               setStateBoth(null);
             }
           });
+          watchIce(conn, () => {
+            if (roleRef.current === "guest" && phaseRef.current !== "idle") {
+              setPeerLeft(true);
+              setError("Connection to the host was lost.");
+              setStatus("error");
+              setPhaseBoth("lobby");
+              setStateBoth(null);
+            }
+          });
         });
         peer.on("error", (err: Error & { type?: string }) => {
           if (err.type === "peer-unavailable") {
@@ -390,7 +446,7 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
         });
       })();
     },
-    [game, resetAll, send, setLobbyBoth, setPhaseBoth, setStateBoth, teardown],
+    [game, resetAll, send, setLobbyBoth, setPhaseBoth, setStateBoth, teardown, watchIce],
   );
 
   const setReady = useCallback(

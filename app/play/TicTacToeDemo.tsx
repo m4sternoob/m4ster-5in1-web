@@ -119,6 +119,7 @@ export default function TicTacToeDemo() {
   const [board, setBoard] = useState<Cell[]>(emptyBoard);
   const [localTurn, setLocalTurn] = useState<"X" | "O">("X");
   const [thinking, setThinking] = useState(false);
+  const thinkingRef = useRef(false);
   const [tally, setTally] = useState({ a: 0, draws: 0, b: 0 });
   const [freshIdx, setFreshIdx] = useState<number | null>(null);
   const countedRef = useRef(false);
@@ -140,12 +141,17 @@ export default function TicTacToeDemo() {
   const hostName = room.lobby?.host.name ?? "Host";
   const guestName = room.lobby?.guest?.name ?? "Guest";
 
-  /* CPU answers in solo mode only — the original demo behavior. */
+  /* CPU answers in solo mode only. The guard lives in a ref on
+     purpose: with `thinking` state in the dep list, the effect's own
+     setThinking re-render runs the cleanup and cancels the pending
+     CPU timer before it fires (the pre-existing soft-lock this
+     mirrors Connect 4's pattern to avoid). */
   useEffect(() => {
-    if (mode !== "solo" || result !== null || thinking) return;
+    if (mode !== "solo" || result !== null || thinkingRef.current) return;
     const xCount = board.filter((c) => c === "X").length;
     const oCount = board.filter((c) => c === "O").length;
     if (xCount <= oCount) return;
+    thinkingRef.current = true;
     setThinking(true);
     const timer = setTimeout(() => {
       setBoard((prev) => {
@@ -154,10 +160,14 @@ export default function TicTacToeDemo() {
         if (move >= 0) { next[move] = "O"; setFreshIdx(move); }
         return next;
       });
+      thinkingRef.current = false;
       setThinking(false);
     }, 450);
-    return () => clearTimeout(timer);
-  }, [mode, board, result, thinking]);
+    return () => {
+      clearTimeout(timer);
+      thinkingRef.current = false;
+    };
+  }, [mode, board, result]);
 
   /* Score counting for solo + local (result derived from local board). */
   useEffect(() => {
@@ -223,6 +233,7 @@ export default function TicTacToeDemo() {
 
   function reset() {
     countedRef.current = false;
+    thinkingRef.current = false;
     setThinking(false);
     setBoard(emptyBoard());
     setLocalTurn("X");
