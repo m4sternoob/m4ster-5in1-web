@@ -88,6 +88,7 @@ function Mark({ cell, fresh }: { cell: Cell; fresh: boolean }) {
 export default function TicTacToeDemo() {
   const [board, setBoard] = useState<Cell[]>(emptyBoard);
   const [thinking, setThinking] = useState(false);
+  const thinkingRef = useRef(false);
   const [tally, setTally] = useState({ you: 0, draws: 0, cpu: 0 });
   const [freshIdx, setFreshIdx] = useState<number | null>(null);
   const countedRef = useRef(false);
@@ -95,11 +96,16 @@ export default function TicTacToeDemo() {
   const result = outcomeOf(board);
   const winLine = result && result !== "draw" ? winLineOf(board) : null;
 
+  /* The guard lives in a ref on purpose: with `thinking` state in the
+     dep list, the effect's own setThinking re-render ran the cleanup
+     and cancelled the pending CPU timer before it fired, so the CPU
+     never answered (soft-lock). Mirrors Connect 4's pattern. */
   useEffect(() => {
-    if (result !== null || thinking) return;
+    if (result !== null || thinkingRef.current) return;
     const xCount = board.filter((c) => c === "X").length;
     const oCount = board.filter((c) => c === "O").length;
     if (xCount <= oCount) return;
+    thinkingRef.current = true;
     setThinking(true);
     const timer = setTimeout(() => {
       setBoard((prev) => {
@@ -108,10 +114,14 @@ export default function TicTacToeDemo() {
         if (move >= 0) { next[move] = "O"; setFreshIdx(move); }
         return next;
       });
+      thinkingRef.current = false;
       setThinking(false);
     }, 450);
-    return () => clearTimeout(timer);
-  }, [board, result, thinking]);
+    return () => {
+      clearTimeout(timer);
+      thinkingRef.current = false;
+    };
+  }, [board, result]);
 
   useEffect(() => {
     if (result === null || countedRef.current) return;
@@ -135,6 +145,7 @@ export default function TicTacToeDemo() {
 
   function reset() {
     countedRef.current = false;
+    thinkingRef.current = false;
     setThinking(false);
     setBoard(emptyBoard());
     setFreshIdx(null);
