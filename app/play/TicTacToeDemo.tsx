@@ -14,7 +14,7 @@ import {
 /* Tic-Tac-Toe, three ways:
    Solo — vs the unbeatable minimax CPU (the original demo, unchanged).
    Local 2P — same device, X and O alternate.
-   Online 2P — host-authoritative rooms over Trystero; temp session
+   Online 2P — host-authoritative rooms over a WebSocket room relay; temp session
    names only, no accounts. X draws in with stroke animation, O draws
    as an arc, win line strikes through, cells bounce on press. */
 

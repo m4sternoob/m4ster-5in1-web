@@ -26,7 +26,7 @@ import {
    Solo — you (red) vs the CPU (yellow); Hard takes wins and blocks,
    Easy plays randomly (the original game, unchanged).
    Local 2P — same device, Red (Player 1) and Yellow (Player 2) alternate.
-   Online 2P — host-authoritative rooms over Trystero, temp session
+   Online 2P — host-authoritative rooms over a WebSocket room relay, temp session
    names only, no accounts. Host plays Red, guest plays Yellow.
    Juiced: gravity disc drops, ghost column previews, canvas confetti
    explosion, sequential win-disc pops, glowing win line, spring banner. */
