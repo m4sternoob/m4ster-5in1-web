@@ -1,6 +1,7 @@
 import AuraBackground from "../components/AuraBackground";
 import BackToGames from "./BackToGames";
 import FullscreenButton from "./FullscreenButton";
+import VolumeControl from "./VolumeControl";
 
 /* Shared wrapper for every /play/<game> page: back link, title,
    and the same centered panel the demos use. Full width on mobile
@@ -18,8 +19,15 @@ export default function GameShell({
   return (
     <div className="w-full text-center sm:max-w-2xl md:pt-10">
       <AuraBackground />
+      {/* BackToGames must stay a direct child of this tall root: a sticky
+          element can only travel within its parent's box, and inside the
+          short header wrapper below it ran out of parent after ~250px and
+          scrolled away with the header — over a tall board or the online
+          lobby (worst inside a short iframe viewport) there was no back
+          control anywhere on screen. As a root child its sticky range is
+          the full page, so the pill stays pinned in every state. */}
+      <BackToGames className="px-4 sm:px-0" />
       <div className="px-4 sm:px-0">
-        <BackToGames />
         <p className="pop-in mb-2 text-xs font-bold tracking-widest text-arcade uppercase">
           Playable in your browser
         </p>
@@ -31,6 +39,7 @@ export default function GameShell({
             {title}
           </h1>
           <FullscreenButton />
+          <VolumeControl />
         </div>
         <p
           className="pop-in mt-3 text-sm text-slate-400"
