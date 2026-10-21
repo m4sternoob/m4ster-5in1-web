@@ -68,17 +68,57 @@ export function inviteLinkFor(code: string): string {
   return `${window.location.origin}${window.location.pathname}?room=${code}`;
 }
 
+/* ICE servers for the WebRTC data channel. The PeerJS defaults are
+   STUN-only, which cannot punch through strict NATs or networks that
+   block UDP — peers signal fine, then the channel never opens. The
+   TURN relays below (Open Relay Project, free public credentials)
+   carry the channel over TCP/TLS when direct paths fail. One shared
+   list for every Peer in this module — no per-game copies. */
+const ICE_SERVERS: RTCIceServer[] = [
+  { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:stun.relay.metered.ca:80" },
+  {
+    urls: "turn:standard.relay.metered.ca:80",
+    username: "openrelayproject",
+    credential: "openrelayproject",
+  },
+  {
+    urls: "turn:standard.relay.metered.ca:80?transport=tcp",
+    username: "openrelayproject",
+    credential: "openrelayproject",
+  },
+  {
+    urls: "turn:standard.relay.metered.ca:443",
+    username: "openrelayproject",
+    credential: "openrelayproject",
+  },
+  {
+    urls: "turns:standard.relay.metered.ca:443?transport=tcp",
+    username: "openrelayproject",
+    credential: "openrelayproject",
+  },
+];
+
 /* Broker override for local testing (set localStorage "m4ster-mp-peer"
    to a JSON PeerJS options object). Unset = the public PeerJS cloud,
-   which is what production uses. */
+   which is what production uses. The ICE config above always applies
+   unless the override ships its own. */
 function peerOptions(): PeerOptions {
+  const base: PeerOptions = { config: { iceServers: ICE_SERVERS } };
   try {
     const raw = window.localStorage.getItem("m4ster-mp-peer");
-    if (raw) return JSON.parse(raw) as PeerOptions;
+    if (raw) {
+      const override = JSON.parse(raw) as PeerOptions;
+      return {
+        ...base,
+        ...override,
+        config: { ...(base.config ?? {}), ...(override.config ?? {}) },
+      };
+    }
   } catch {
     /* fall through to the cloud default */
   }
-  return {};
+  return base;
 }
 
 type Wire =
@@ -133,6 +173,10 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
   const joinTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const iceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retryRef = useRef(0);
+  /* Bumped on every teardown: async closures (join retries, broker
+     reconnects) capture their generation and bail when it goes stale,
+     so a dead session can never resurrect itself. */
+  const sessionRef = useRef(0);
 
   const setPhaseBoth = useCallback((p: MpPhase) => {
     phaseRef.current = p;
@@ -167,6 +211,7 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
   }, [send]);
 
   const teardown = useCallback(() => {
+    sessionRef.current += 1;
     if (joinTimerRef.current) {
       clearTimeout(joinTimerRef.current);
       joinTimerRef.current = null;
@@ -326,9 +371,36 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
         const roomCode = generateRoomCode();
         const peer = new PeerCtor(peerIdFor(game, roomCode), peerOptions());
         peerRef.current = peer;
+        /* Registration watchdog: a broker socket that hangs silently
+           (captive portal, firewall dropping packets) produces neither
+           'open' nor 'error' — without this the panel would sit on
+           "Creating room…" forever with nothing wrong on screen. */
+        let opened = false;
+        const regTimer = setTimeout(() => {
+          if (opened || peerRef.current !== peer) return;
+          try { peer.destroy(); } catch { /* noop */ }
+          setError("Could not reach the game server. Check your connection and try again.");
+          setStatus("error");
+          setCode(null);
+          setLobbyBoth(null);
+          setPhaseBoth("idle");
+        }, 10000);
+        /* The lobby is presented ONLY from this handler — i.e. only
+           once the broker has confirmed the registration. Before
+           'open' the room does not exist for guests, and the panel
+           shows "Creating room…", never a code nobody can join. */
         peer.on("open", () => {
-          setCode(roomCode);
+          if (peerRef.current !== peer) return;
+          opened = true;
+          clearTimeout(regTimer);
           setStatus("connected");
+          if (lobbyRef.current) {
+            /* Re-registration after a broker-socket drop: the room
+               (and any live guest connection) survived — just resync. */
+            broadcastLobby();
+            return;
+          }
+          setCode(roomCode);
           setPhaseBoth("lobby");
           setLobbyBoth({ host: { name: nameRef.current, ready: false }, guest: null });
         });
@@ -340,7 +412,29 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
           }
           wireHostConnection(conn);
         });
+        /* If the broker socket drops (phone network switch, tab
+           suspension, brief outage), the broker expires this peer id
+           and every guest gets "peer-unavailable" while the lobby
+           still looks open. reconnect() re-registers the SAME id —
+           an established data connection is not touched by it. */
+        peer.on("disconnected", () => {
+          if (peerRef.current !== peer || peer.destroyed) return;
+          setStatus("connecting");
+          try {
+            peer.reconnect();
+          } catch { /* 'close' handler below reports the loss */ }
+        });
+        peer.on("close", () => {
+          if (peerRef.current !== peer) return;
+          /* Registration is gone for good: never leave a joinable-
+             looking lobby up for a room that no longer exists. */
+          resetAll();
+          setError("Connection to the game server was lost — this room is closed. Create a new room to get a fresh code.");
+          setStatus("error");
+        });
         peer.on("error", (err: Error & { type?: string }) => {
+          if (peerRef.current !== peer) return;
+          clearTimeout(regTimer);
           if (err.type === "unavailable-id" && retryRef.current < 3) {
             retryRef.current += 1;
             try { peer.destroy(); } catch { /* noop */ }
@@ -349,12 +443,14 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
           }
           setError("Could not create the room. Check your connection and try again.");
           setStatus("error");
+          setCode(null);
+          setLobbyBoth(null);
           setPhaseBoth("idle");
         });
       };
       void attempt();
     },
-    [game, resetAll, setLobbyBoth, setPhaseBoth, wireHostConnection],
+    [game, resetAll, broadcastLobby, setLobbyBoth, setPhaseBoth, wireHostConnection],
   );
 
   const joinRoom = useCallback(
@@ -368,28 +464,67 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
       setCode(roomCode);
       setStatus("connecting");
       setPhaseBoth("connecting");
+      const gen = sessionRef.current;
 
       void (async () => {
         const { default: PeerCtor } = await import("peerjs");
+        if (sessionRef.current !== gen) return;
         const peer = new PeerCtor(peerOptions());
         peerRef.current = peer;
-        peer.on("open", () => {
-          const conn = peer.connect(peerIdFor(game, roomCode), { reliable: true });
-          connRef.current = conn;
-          joinTimerRef.current = setTimeout(() => {
-            if (!conn.open) {
-              setError("Room not found — check the code and try again.");
-              setStatus("error");
-              setPhaseBoth("idle");
-              teardown();
-            }
-          }, 12000);
-          conn.on("open", () => {
-            if (joinTimerRef.current) clearTimeout(joinTimerRef.current);
-            setStatus("connected");
-            setPhaseBoth("lobby");
-            send({ t: "hello", name: nameRef.current });
-          });
+
+        /* Join attempts retry for ~10s before giving up. A guest who
+           arrives while the host is still registering — or while the
+           host re-registers after a broker-socket drop — gets a fast
+           "peer-unavailable" from the broker even though the room is
+           real; failing instantly on that made live rooms look
+           nonexistent. Only when the whole budget is spent does the
+           guest see "Room not found". */
+        let settled = false;
+        const startedAt = Date.now();
+        const RETRY_BUDGET_MS = 10000;
+        const RETRY_DELAY_MS = 2000;
+        const ATTEMPT_TIMEOUT_MS = 4000;
+
+        const alive = () =>
+          sessionRef.current === gen && peerRef.current === peer && !settled;
+
+        const clearJoinTimer = () => {
+          if (joinTimerRef.current) {
+            clearTimeout(joinTimerRef.current);
+            joinTimerRef.current = null;
+          }
+        };
+
+        const fail = (msg: string) => {
+          if (!alive()) return;
+          settled = true;
+          clearJoinTimer();
+          clearTimeout(regTimer);
+          setError(msg);
+          setStatus("error");
+          setPhaseBoth("idle");
+          teardown();
+        };
+
+        const dropAttempt = () => {
+          const conn = connRef.current;
+          if (conn) {
+            try { conn.close(); } catch { /* noop */ }
+            if (connRef.current === conn) connRef.current = null;
+          }
+        };
+
+        function scheduleRetry() {
+          if (!alive()) return;
+          clearJoinTimer();
+          if (Date.now() - startedAt >= RETRY_BUDGET_MS) {
+            fail("Room not found — check the code and try again.");
+            return;
+          }
+          joinTimerRef.current = setTimeout(attemptConnect, RETRY_DELAY_MS);
+        }
+
+        const wireSession = (conn: DataConnection) => {
           conn.on("data", (raw) => {
             const msg = raw as Wire;
             switch (msg.t) {
@@ -433,16 +568,66 @@ export function useMpRoom<S, M>(game: string, engine: MpEngine<S, M>): MpRoom<S,
               setStateBoth(null);
             }
           });
+        };
+
+        function attemptConnect() {
+          if (!alive()) return;
+          if (Date.now() - startedAt >= RETRY_BUDGET_MS) {
+            scheduleRetry();
+            return;
+          }
+          const conn = peer.connect(peerIdFor(game, roomCode), { reliable: true });
+          connRef.current = conn;
+          clearJoinTimer();
+          joinTimerRef.current = setTimeout(() => {
+            if (!alive() || conn.open) return;
+            // No answer from the room within this attempt's window.
+            dropAttempt();
+            scheduleRetry();
+          }, ATTEMPT_TIMEOUT_MS);
+          conn.on("open", () => {
+            if (!alive()) return;
+            settled = true;
+            clearJoinTimer();
+            setStatus("connected");
+            setPhaseBoth("lobby");
+            wireSession(conn);
+            send({ t: "hello", name: nameRef.current });
+          });
+        }
+
+        /* Registration watchdog: if this guest's own peer never
+           reaches the broker (socket hangs silently), no 'open' and
+           no 'error' ever arrive — fail visibly instead of spinning
+           on "Joining…" forever. */
+        const regTimer = setTimeout(() => {
+          fail("Connection problem — check your internet and try again.");
+        }, 9000);
+
+        peer.on("open", () => {
+          if (peerRef.current !== peer) return;
+          clearTimeout(regTimer);
+          attemptConnect();
+        });
+        peer.on("disconnected", () => {
+          if (peerRef.current !== peer || peer.destroyed) return;
+          try {
+            peer.reconnect();
+          } catch { /* noop */ }
+        });
+        peer.on("close", () => {
+          if (peerRef.current !== peer || settled) return;
+          fail("Connection problem — check your internet and try again.");
         });
         peer.on("error", (err: Error & { type?: string }) => {
+          if (peerRef.current !== peer || settled) return;
           if (err.type === "peer-unavailable") {
-            if (joinTimerRef.current) clearTimeout(joinTimerRef.current);
-            setError("Room not found — check the code and try again.");
+            clearJoinTimer();
+            dropAttempt();
+            scheduleRetry();
           } else {
-            setError("Connection problem — check your internet and try again.");
+            fail("Connection problem — check your internet and try again.");
           }
-          setStatus("error");
-          setPhaseBoth("idle");
         });
       })();
     },
