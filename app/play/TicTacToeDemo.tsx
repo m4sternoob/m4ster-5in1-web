@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import FullscreenButton from "./FullscreenButton";
+import VolumeControl from "./VolumeControl";
 import ModePicker, { type GameMode } from "../components/mp/ModePicker";
 import OnlinePanel from "../components/mp/OnlinePanel";
 import {
@@ -367,6 +368,7 @@ export default function TicTacToeDemo() {
           Tic-Tac-Toe
         </h1>
         <FullscreenButton />
+        <VolumeControl />
       </div>
       <p className="pop-in mt-3 mb-5 text-sm text-slate-400" style={{ "--pop-delay": "160ms" } as CSSProperties}>
         {mode === "solo"

@@ -3,6 +3,7 @@
 import { useState, type CSSProperties } from "react";
 import Link from "next/link";
 import FullscreenButton from "./FullscreenButton";
+import VolumeControl from "./VolumeControl";
 
 /* Playable Guessing Game demo: guess the secret number before your attempts
    run out. Mirrors the Mac app's rules — Easy 1–50 (8 attempts),
@@ -204,6 +205,7 @@ export default function GuessingDemo() {
           Guessing Game
         </h1>
         <FullscreenButton />
+        <VolumeControl />
       </div>
       <p className="pop-in mt-3 text-sm text-slate-400" style={{ "--pop-delay": "160ms" } as CSSProperties}>
         The game that started M4ster-5IN1 — guess the secret number before your
