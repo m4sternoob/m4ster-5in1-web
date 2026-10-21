@@ -99,12 +99,38 @@ const ICE_SERVERS: RTCIceServer[] = [
   },
 ];
 
+/* Broker selection. Default: the public PeerJS cloud — a free shared
+   demo service with no SLA. A self-hosted PeerServer (same protocol,
+   same client) can be swapped in WITHOUT a code change by setting
+   these env vars at build time (e.g. in the Cloudflare Pages project):
+     NEXT_PUBLIC_MP_BROKER_HOST    e.g. "broker.example.com" (required)
+     NEXT_PUBLIC_MP_BROKER_PORT    e.g. "443"        (default: Peer's)
+     NEXT_PUBLIC_MP_BROKER_PATH    e.g. "/peerjs"    (default: "/")
+     NEXT_PUBLIC_MP_BROKER_SECURE  "1"/"0"           (default: "1")
+   Unset = public cloud, exactly as before. */
+function envBrokerOptions(): PeerOptions {
+  const host = process.env.NEXT_PUBLIC_MP_BROKER_HOST;
+  if (!host) return {};
+  const opts: PeerOptions = {
+    host,
+    path: process.env.NEXT_PUBLIC_MP_BROKER_PATH || "/",
+  };
+  const port = process.env.NEXT_PUBLIC_MP_BROKER_PORT;
+  if (port) opts.port = Number(port);
+  const secure = process.env.NEXT_PUBLIC_MP_BROKER_SECURE;
+  opts.secure = secure == null ? true : secure === "1" || secure === "true";
+  return opts;
+}
+
 /* Broker override for local testing (set localStorage "m4ster-mp-peer"
-   to a JSON PeerJS options object). Unset = the public PeerJS cloud,
-   which is what production uses. The ICE config above always applies
-   unless the override ships its own. */
+   to a JSON PeerJS options object). Unset = the env-configured broker
+   above, or the public PeerJS cloud when no env is set either. The ICE
+   config always applies unless an override ships its own. */
 function peerOptions(): PeerOptions {
-  const base: PeerOptions = { config: { iceServers: ICE_SERVERS } };
+  const base: PeerOptions = {
+    config: { iceServers: ICE_SERVERS },
+    ...envBrokerOptions(),
+  };
   try {
     const raw = window.localStorage.getItem("m4ster-mp-peer");
     if (raw) {
@@ -116,7 +142,7 @@ function peerOptions(): PeerOptions {
       };
     }
   } catch {
-    /* fall through to the cloud default */
+    /* fall through to the configured default */
   }
   return base;
 }
