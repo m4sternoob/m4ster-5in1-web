@@ -3,10 +3,20 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import FullscreenButton from "./FullscreenButton";
+import ModePicker, { type GameMode } from "../components/mp/ModePicker";
+import OnlinePanel from "../components/mp/OnlinePanel";
+import {
+  inviteCodeFromUrl,
+  useMpRoom,
+  type MpEngine,
+} from "../lib/mp/room";
 
-/* Tic-Tac-Toe vs minimax CPU — X draws in with stroke animation,
-   O draws as an arc, win line strikes through, cells bounce on press.
-   60fps: SVG stroke-dashoffset + GPU transforms only. */
+/* Tic-Tac-Toe, three ways:
+   Solo — vs the unbeatable minimax CPU (the original demo, unchanged).
+   Local 2P — same device, X and O alternate.
+   Online 2P — host-authoritative rooms over PeerJS; temp session
+   names only, no accounts. X draws in with stroke animation, O draws
+   as an arc, win line strikes through, cells bounce on press. */
 
 type Cell = "X" | "O" | null;
 type Outcome = "X" | "O" | "draw" | null;
@@ -65,6 +75,23 @@ function pickCpuMove(board: Cell[]): number {
 
 const emptyBoard = (): Cell[] => Array<Cell>(9).fill(null);
 
+/* ---- online engine: host is X, guest is O, host validates moves ---- */
+type TttState = { board: Cell[]; turn: "X" | "O" };
+
+const tttEngine: MpEngine<TttState, number> = {
+  initial: () => ({ board: emptyBoard(), turn: "X" }),
+  applyMove: (state, idx, by) => {
+    const mark = by === "host" ? "X" : "O";
+    if (state.turn !== mark) return null;
+    if (idx < 0 || idx > 8 || state.board[idx] !== null) return null;
+    if (outcomeOf(state.board) !== null) return null;
+    const board = [...state.board];
+    board[idx] = mark;
+    return { board, turn: mark === "X" ? "O" : "X" };
+  },
+  isFinished: (state) => outcomeOf(state.board) !== null,
+};
+
 /* SVG mark that draws itself in. */
 function Mark({ cell, fresh }: { cell: Cell; fresh: boolean }) {
   if (cell === "X") {
@@ -86,17 +113,36 @@ function Mark({ cell, fresh }: { cell: Cell; fresh: boolean }) {
 }
 
 export default function TicTacToeDemo() {
+  const [mode, setMode] = useState<GameMode>("solo");
+  const room = useMpRoom<TttState, number>("tictactoe", tttEngine);
+
   const [board, setBoard] = useState<Cell[]>(emptyBoard);
+  const [localTurn, setLocalTurn] = useState<"X" | "O">("X");
   const [thinking, setThinking] = useState(false);
-  const [tally, setTally] = useState({ you: 0, draws: 0, cpu: 0 });
+  const [tally, setTally] = useState({ a: 0, draws: 0, b: 0 });
   const [freshIdx, setFreshIdx] = useState<number | null>(null);
   const countedRef = useRef(false);
+  const countedStateRef = useRef<TttState | null>(null);
+  const prevOnlineBoardRef = useRef<Cell[] | null>(null);
 
-  const result = outcomeOf(board);
-  const winLine = result && result !== "draw" ? winLineOf(board) : null;
-
+  // An invite link (?room=CODE) opens straight into Online 2P.
   useEffect(() => {
-    if (result !== null || thinking) return;
+    if (inviteCodeFromUrl()) setMode("online");
+  }, []);
+
+  const online = mode === "online";
+  const shownBoard = online ? (room.state?.board ?? emptyBoard()) : board;
+  const result = outcomeOf(shownBoard);
+  const winLine = result && result !== "draw" ? winLineOf(shownBoard) : null;
+
+  const myMark: "X" | "O" = room.role === "guest" ? "O" : "X";
+  const myTurn = online && room.phase === "playing" && room.state?.turn === myMark;
+  const hostName = room.lobby?.host.name ?? "Host";
+  const guestName = room.lobby?.guest?.name ?? "Guest";
+
+  /* CPU answers in solo mode only — the original demo behavior. */
+  useEffect(() => {
+    if (mode !== "solo" || result !== null || thinking) return;
     const xCount = board.filter((c) => c === "X").length;
     const oCount = board.filter((c) => c === "O").length;
     if (xCount <= oCount) return;
@@ -111,41 +157,121 @@ export default function TicTacToeDemo() {
       setThinking(false);
     }, 450);
     return () => clearTimeout(timer);
-  }, [board, result, thinking]);
+  }, [mode, board, result, thinking]);
 
+  /* Score counting for solo + local (result derived from local board). */
   useEffect(() => {
-    if (result === null || countedRef.current) return;
+    if (online || result === null || countedRef.current) return;
     countedRef.current = true;
     setTally((t) => ({
-      you: t.you + (result === "X" ? 1 : 0),
+      a: t.a + (result === "X" ? 1 : 0),
       draws: t.draws + (result === "draw" ? 1 : 0),
-      cpu: t.cpu + (result === "O" ? 1 : 0),
+      b: t.b + (result === "O" ? 1 : 0),
     }));
-  }, [result]);
+  }, [online, result]);
+
+  /* Score counting for online (once per finished authoritative state). */
+  useEffect(() => {
+    if (!online || room.phase !== "finished" || !room.state) return;
+    if (countedStateRef.current === room.state) return;
+    countedStateRef.current = room.state;
+    const r = outcomeOf(room.state.board);
+    if (!r) return;
+    setTally((t) => ({
+      a: t.a + (r === "X" ? 1 : 0),
+      draws: t.draws + (r === "draw" ? 1 : 0),
+      b: t.b + (r === "O" ? 1 : 0),
+    }));
+  }, [online, room.phase, room.state]);
+
+  /* Draw-in animation for the cell that just changed online. */
+  useEffect(() => {
+    if (!online) return;
+    const b = room.state?.board ?? null;
+    if (b && prevOnlineBoardRef.current) {
+      const idx = b.findIndex((c, i) => c !== prevOnlineBoardRef.current![i]);
+      if (idx >= 0) setFreshIdx(idx);
+    }
+    prevOnlineBoardRef.current = b ? [...b] : null;
+  }, [online, room.state]);
 
   function play(index: number) {
-    if (result !== null || thinking || board[index] !== null) return;
-    setFreshIdx(index);
-    setBoard((prev) => {
-      const next = [...prev];
-      next[index] = "X";
-      return next;
-    });
+    if (online) {
+      if (!myTurn || shownBoard[index] !== null) return;
+      room.sendMove(index);
+      return;
+    }
+    if (result !== null || shownBoard[index] !== null) return;
+    if (mode === "solo") {
+      if (thinking) return;
+      setFreshIdx(index);
+      setBoard((prev) => {
+        const next = [...prev];
+        next[index] = "X";
+        return next;
+      });
+    } else {
+      setFreshIdx(index);
+      setBoard((prev) => {
+        const next = [...prev];
+        next[index] = localTurn;
+        return next;
+      });
+      setLocalTurn((t) => (t === "X" ? "O" : "X"));
+    }
   }
 
   function reset() {
     countedRef.current = false;
     setThinking(false);
     setBoard(emptyBoard());
+    setLocalTurn("X");
     setFreshIdx(null);
   }
 
+  function changeMode(next: GameMode) {
+    if (next === mode) return;
+    if (online) room.leave();
+    countedStateRef.current = null;
+    prevOnlineBoardRef.current = null;
+    setTally({ a: 0, draws: 0, b: 0 });
+    reset();
+    setMode(next);
+  }
+
+  const winnerName = result === "X" ? hostName : guestName;
+  const turnName = room.state?.turn === "X" ? hostName : guestName;
+
   const status =
-    result === "X" ? "You win — the impossible happened."
-    : result === "O" ? "CPU wins. It plays perfectly, so a draw is your best shot."
-    : result === "draw" ? "Draw. Against perfect play, that's a victory."
-    : thinking ? "CPU is thinking…"
-    : "Your move — you're X.";
+    mode === "solo"
+      ? result === "X" ? "You win — the impossible happened."
+        : result === "O" ? "CPU wins. It plays perfectly, so a draw is your best shot."
+        : result === "draw" ? "Draw. Against perfect play, that's a victory."
+        : thinking ? "CPU is thinking…"
+        : "Your move — you're X."
+      : mode === "local"
+        ? result === "X" ? "Player 1 wins!"
+          : result === "O" ? "Player 2 wins!"
+          : result === "draw" ? "Draw — dead even."
+          : localTurn === "X" ? "Player 1's turn — X."
+          : "Player 2's turn — O."
+        : result === "X" || result === "O" ? `${winnerName} wins!`
+          : result === "draw" ? "Draw — nobody blinked."
+          : room.phase !== "playing" ? "Match over."
+          : myTurn ? `Your move — you're ${myMark}.`
+          : `${turnName}'s turn…`;
+
+  const tallyLabels =
+    mode === "solo"
+      ? { a: "You", b: "CPU" }
+      : mode === "local"
+        ? { a: "Player 1", b: "Player 2" }
+        : { a: hostName, b: guestName };
+
+  const cellDisabled = (cell: Cell) =>
+    online
+      ? cell !== null || result !== null || !myTurn
+      : cell !== null || result !== null || (mode === "solo" && thinking);
 
   // Win line geometry in cell units (0..3).
   const lineGeom = winLine ? (() => {
@@ -155,29 +281,16 @@ export default function TicTacToeDemo() {
     return { x1: ax, y1: ay, x2: bx, y2: by };
   })() : null;
 
-  return (
-    <div className="w-full px-4 text-center sm:max-w-md sm:px-0">
-      <p className="pop-in mb-2 text-xs font-bold tracking-widest text-arcade uppercase" style={{ "--pop-delay": "40ms" } as CSSProperties}>
-        Playable demo
-      </p>
-      <div className="pop-in flex items-center justify-center gap-3" style={{ "--pop-delay": "100ms" } as CSSProperties}>
-        <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-          Tic-Tac-Toe vs CPU
-        </h1>
-        <FullscreenButton />
-      </div>
-      <p className="pop-in mt-3 text-sm text-slate-400" style={{ "--pop-delay": "160ms" } as CSSProperties}>
-        An unbeatable minimax opponent — it never plays a losing move.
-      </p>
-
-      <div className="pop-in relative mx-auto mt-8 w-full sm:w-72" style={{ "--pop-delay": "220ms" } as CSSProperties}>
+  const boardBlock = (
+    <>
+      <div className="pop-in relative mx-auto w-full sm:w-72" style={{ "--pop-delay": "220ms" } as CSSProperties}>
         <div className="grid touch-manipulation grid-cols-3 gap-2" role="grid" aria-label="Tic-Tac-Toe board">
-          {board.map((cell, i) => (
+          {shownBoard.map((cell, i) => (
             <button
               key={i}
               type="button"
               onClick={() => play(i)}
-              disabled={cell !== null || result !== null || thinking}
+              disabled={cellDisabled(cell)}
               aria-label={`Cell ${i + 1}${cell ? `, ${cell}` : ""}`}
               className={`ttt-cell ${winLine?.includes(i) ? "ttt-cell-win" : ""}`}
             >
@@ -206,18 +319,55 @@ export default function TicTacToeDemo() {
       </p>
 
       <div className="mt-4 flex items-center justify-center gap-6 text-sm text-slate-400">
-        <span>You <strong key={tally.you} className="score-pop text-white">{tally.you}</strong></span>
+        <span><span className="inline-block max-w-28 truncate align-bottom">{tallyLabels.a}</span> <strong key={tally.a} className="score-pop text-white">{tally.a}</strong></span>
         <span>Draws <strong key={tally.draws} className="score-pop text-white">{tally.draws}</strong></span>
-        <span>CPU <strong key={tally.cpu} className="score-pop text-white">{tally.cpu}</strong></span>
+        <span><span className="inline-block max-w-28 truncate align-bottom">{tallyLabels.b}</span> <strong key={tally.b} className="score-pop text-white">{tally.b}</strong></span>
       </div>
 
-      <button
-        type="button"
-        onClick={reset}
-        className="btn-alive mt-6 rounded-lg border border-edge bg-panel px-6 py-2.5 text-sm font-semibold text-slate-200 hover:border-arcade hover:text-arcade"
-      >
-        New game
-      </button>
+      {online ? (
+        room.phase === "finished" && (
+          <button
+            type="button"
+            onClick={() => room.backToLobby()}
+            className="btn-alive mt-6 rounded-lg border border-edge bg-panel px-6 py-2.5 text-sm font-semibold text-slate-200 hover:border-arcade hover:text-arcade"
+          >
+            Rematch — back to lobby
+          </button>
+        )
+      ) : (
+        <button
+          type="button"
+          onClick={reset}
+          className="btn-alive mt-6 rounded-lg border border-edge bg-panel px-6 py-2.5 text-sm font-semibold text-slate-200 hover:border-arcade hover:text-arcade"
+        >
+          New game
+        </button>
+      )}
+    </>
+  );
+
+  return (
+    <div className="w-full px-4 text-center sm:max-w-md sm:px-0">
+      <p className="pop-in mb-2 text-xs font-bold tracking-widest text-arcade uppercase" style={{ "--pop-delay": "40ms" } as CSSProperties}>
+        Playable demo
+      </p>
+      <div className="pop-in flex items-center justify-center gap-3" style={{ "--pop-delay": "100ms" } as CSSProperties}>
+        <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+          Tic-Tac-Toe
+        </h1>
+        <FullscreenButton />
+      </div>
+      <p className="pop-in mt-3 mb-5 text-sm text-slate-400" style={{ "--pop-delay": "160ms" } as CSSProperties}>
+        {mode === "solo"
+          ? "An unbeatable minimax opponent — it never plays a losing move."
+          : mode === "local"
+            ? "Same device — Player 1 is X, Player 2 is O. Pass and play."
+            : "Online rooms with a short code — no account, no sign-in."}
+      </p>
+
+      <ModePicker mode={mode} onChange={changeMode} />
+
+      {online ? <OnlinePanel room={room}>{boardBlock}</OnlinePanel> : boardBlock}
 
       <p className="mt-8 text-xs text-slate-500">
         Five games, one app —{" "}

@@ -10,6 +10,8 @@ import PwaRegister from "./components/PwaRegister";
 import AutoFullscreen from "./components/AutoFullscreen";
 import OrientationGuard from "./components/OrientationGuard";
 import AppShell from "./components/app/AppShell";
+import TestBadge from "./components/TestBadge";
+import { TEST_SUFFIX } from "./lib/buildInfo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,7 +25,7 @@ const geistMono = Geist_Mono({
 
 const SITE_URL = "https://m4ster-5in1.vercel.app";
 const SITE_TITLE =
-  "M4ster-5IN1 — Five Games, One App | Play Free Browser Games";
+  "M4ster-5IN1 — Five Games, One App | Play Free Browser Games" + TEST_SUFFIX;
 const SITE_DESC =
   "Play 9 free browser games in one app — Snake, 2048, Memory Match, Minesweeper, Tic-Tac-Toe, Connect 4, Number Guessing, Snakes & Ladders and more. No downloads, no signup, 100% free.";
 const SITE_KEYWORDS = [
@@ -153,6 +155,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </div>
         <AuraBackground />
         <TileGrid />
+        <TestBadge />
         <OrbCursor />
         <CustomizeToolbar />
         <BackToTop />
