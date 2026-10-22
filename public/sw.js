@@ -41,7 +41,12 @@ if (IN_APP_SHELL) {
   // request go straight to the bundle.
   self.addEventListener("fetch", () => {});
 } else {
-  const CACHE = "5in1-v2";
+  // v3: the volume-control deploy (2026-10-21) left this name at v2,
+  // so clients kept the old worker and its whole cache — pages and
+  // chunks from before that deploy stayed in rotation on devices
+  // that had visited earlier. Bump the name on any deploy that must
+  // reach every installed client; activate below deletes the rest.
+  const CACHE = "5in1-v3";
   const CORE = ["/", "/play/", "/manifest.json", "/offline.html"];
 
   // Install: pre-cache the app shell.
