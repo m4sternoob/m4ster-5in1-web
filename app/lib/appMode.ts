@@ -175,6 +175,10 @@ export async function quitApp(): Promise<boolean> {
 
   // Capacitor: the App plugin closes Android apps. iOS forbids
   // programmatic exit, so this rejects there and we fall back.
+  // The plugin has to be installed (@capacitor/app) or the native
+  // project registers no plugins at all — the shipped APK had an
+  // empty plugin list, so Plugins.App was undefined and Quit fell
+  // through to the web fallback dialog inside the native app.
   const exitApp = window.Capacitor?.Plugins?.App?.exitApp;
   if (exitApp) {
     try {
@@ -182,6 +186,15 @@ export async function quitApp(): Promise<boolean> {
       return true;
     } catch {
       /* fall through */
+    }
+  }
+  if (isCapacitor()) {
+    try {
+      const { App } = await import("@capacitor/app");
+      await App.exitApp();
+      return true;
+    } catch {
+      /* plugin missing or exit refused — fall through */
     }
   }
 
