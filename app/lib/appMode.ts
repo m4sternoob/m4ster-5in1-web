@@ -104,6 +104,27 @@ export function isInstalledPwa(): boolean {
   );
 }
 
+/** True only for a genuinely installed PWA: standalone / minimal-ui
+    display mode, or iOS's navigator.standalone. Deliberately narrower
+    than isInstalledPwa() — fullscreen does NOT count. Fullscreen is a
+    transient state a plain browser tab enters (AutoFullscreen asks for
+    it on the first tap) and an embedded frame inherits from its host
+    page; treating it as "installed" made the app shell latch onto
+    ordinary website visits. Use this where the question is "did the
+    user install this app", not "should the shell engage". */
+export function isStandaloneDisplay(): boolean {
+  if (typeof window === "undefined") return false;
+  if (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.matchMedia("(display-mode: minimal-ui)").matches
+  ) {
+    return true;
+  }
+  return (
+    typeof navigator !== "undefined" && navigator.standalone === true
+  );
+}
+
 /** True when the app should render the locked app shell. */
 export function detectAppMode(): boolean {
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useAppMode } from "../components/app/AppModeProvider";
+import { isNativeShell, isStandaloneDisplay } from "../lib/appMode";
 import {
   DEFAULT_VOLUME,
   ambientMusic,
@@ -17,8 +17,19 @@ import {
  * fullscreen button in the game-page header. All state goes through
  * lib/music and the same `m4ster-app-volume` localStorage key the
  * AppBar writes, so the two surfaces can never disagree: a level set
- * here is the level the app opens with, and vice versa. In app mode
- * the AppBar already covers this, so the component renders nothing.
+ * here is the level the app opens with, and vice versa.
+ *
+ * Where this renders is decided by the environment, not by the React
+ * context: it steps aside ONLY where the AppBar is contractually the
+ * volume UI — the native shells (Tauri / Capacitor) and a genuinely
+ * installed PWA (standalone display). It used to key off the app-mode
+ * context flag, i.e. it vanished whenever AppModeProvider mounted —
+ * and that provider also mounts when the shell latches onto a plain
+ * browser tab via display-mode: fullscreen (AutoFullscreen requests
+ * fullscreen on the first tap, and embedded frames can report a
+ * fullscreen host), leaving a website visitor with no page-level
+ * volume control at all. Fullscreen alone is not an install, so it
+ * never suppresses this control.
  *
  * Interaction mirrors the AppBar panel: the speaker toggles mute (the
  * level itself is kept, so unmuting restores it), a slider sits inline
@@ -78,7 +89,15 @@ const chromeBtn =
   "btn-alive shrink-0 rounded-lg border border-edge bg-panel p-2 text-slate-300 transition-colors hover:border-arcade hover:text-arcade";
 
 export default function VolumeControl() {
-  const { appMode } = useAppMode();
+  /* Decided once, synchronously, from the same signals the shell
+     gate uses — no provider needs to have mounted, and a provider
+     mounting later (the fullscreen latch) cannot change the answer:
+     both checks are false for a plain tab before and after any latch.
+     On the server both are false, so SSR renders the control exactly
+     as a plain browser will keep it. */
+  const [shellOwnsVolume] = useState(
+    () => isNativeShell() || isStandaloneDisplay(),
+  );
   const [state, setState] = useState<VolumeState>({
     volume: DEFAULT_VOLUME,
     muted: false,
@@ -98,14 +117,16 @@ export default function VolumeControl() {
 
   /* Same gesture kick as the app shell: browsers hold audio until a
      user gesture, so the engine starts (or resumes) on the first
-     pointerdown anywhere on the page. */
+     pointerdown anywhere on the page. Runs whenever this control is
+     the page's volume surface; in the shells that suppress it, the
+     provider's own kick covers the engine instead. */
   useEffect(() => {
-    if (appMode) return;
+    if (shellOwnsVolume) return;
     const kick = () => ambientMusic.start(stateRef.current);
     kick();
     window.addEventListener("pointerdown", kick);
     return () => window.removeEventListener("pointerdown", kick);
-  }, [appMode]);
+  }, [shellOwnsVolume]);
 
   useEffect(() => {
     if (!panelOpen) return;
@@ -131,7 +152,7 @@ export default function VolumeControl() {
     return () => document.removeEventListener("pointerdown", onDown);
   }, [panelOpen]);
 
-  if (appMode) return null;
+  if (shellOwnsVolume) return null;
 
   const { volume, muted } = state;
   const shown = muted ? 0 : volume;
