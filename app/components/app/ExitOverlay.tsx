@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useAppMode } from "./AppModeProvider";
+import { isNativeShell } from "../../lib/appMode";
 
 /* Exit confirmation, shown by the quit button and by a back press at
  * the launcher root. Quitting goes through the native bridges (see
@@ -25,6 +26,9 @@ export default function ExitOverlay() {
 
   const manual = quitState === "manual";
   const closing = quitState === "closing";
+  // Inside a native shell the manual state means the platform refused
+  // a programmatic exit (iOS) — never describe the app as a web app.
+  const nativeShell = isNativeShell();
 
   return (
     <div
@@ -44,8 +48,9 @@ export default function ExitOverlay() {
               You can close the app now
             </h2>
             <p className="mt-2 text-sm text-slate-400">
-              This device does not let web apps close themselves. Use your
-              app switcher or home button to leave M4ster-5IN1.
+              {nativeShell
+                ? "Use your app switcher or home button to leave M4ster-5IN1."
+                : "This device does not let web apps close themselves. Use your app switcher or home button to leave M4ster-5IN1."}
             </p>
             <button
               type="button"
