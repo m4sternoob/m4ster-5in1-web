@@ -1,0 +1,15 @@
+# m4ster-5in1 room relay — see README.md in this folder.
+# Deploy with:  npx wrangler deploy        (from this folder)
+# Local dev:    npx wrangler dev           (serves on http://127.0.0.1:8787)
+
+name = "m4ster-5in1-relay"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+[[durable_objects.bindings]]
+name = "ROOMS"
+class_name = "Room"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room"]
