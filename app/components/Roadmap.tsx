@@ -43,7 +43,7 @@ const PHASES: Phase[] = [
       "Game-switch transitions",
       "Snake: pause menu and game-over stats",
       "Guessing: streak tracking",
-      "Subtle sound effects, mutable, off by default",
+      "Per-game sound effects (music and volume control already ship)",
     ],
   },
   {
@@ -59,7 +59,6 @@ const PHASES: Phase[] = [
 ];
 
 const NON_GOALS = [
-  "No network multiplayer — it stays offline",
   "No accounts",
   "No analytics",
   "No ads",

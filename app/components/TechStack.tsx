@@ -26,7 +26,7 @@ const STACK = [
   },
   {
     name: "Offline",
-    detail: "No network, no accounts, no analytics, no ads.",
+    detail: "Solo play is fully offline. Online 2P rooms connect through our relay — still no accounts, no analytics, no ads.",
   },
 ];
 

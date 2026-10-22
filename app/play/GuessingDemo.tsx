@@ -198,7 +198,7 @@ export default function GuessingDemo() {
   return (
     <div className="w-full px-4 text-center sm:max-w-md sm:px-0">
       <p className="pop-in mb-2 text-xs font-bold tracking-widest text-arcade uppercase" style={{ "--pop-delay": "40ms" } as CSSProperties}>
-        Playable demo
+        Playable in your browser
       </p>
       <div className="pop-in flex items-center justify-center gap-3" style={{ "--pop-delay": "100ms" } as CSSProperties}>
         <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">

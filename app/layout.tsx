@@ -27,13 +27,11 @@ const SITE_URL = "https://m4ster-5in1.vercel.app";
 const SITE_TITLE =
   "M4ster-5IN1 — Five Games, One App | Play Free Browser Games" + TEST_SUFFIX;
 const SITE_DESC =
-  "Play 9 free browser games in one app — Snake, 2048, Memory Match, Minesweeper, Tic-Tac-Toe, Connect 4, Number Guessing, Snakes & Ladders and more. No downloads, no signup, 100% free.";
+  "Play five free browser games in one app — Snake, Connect 4, Memory Match, Tic-Tac-Toe, and Number Guessing. No downloads, no signup, 100% free.";
 const SITE_KEYWORDS = [
   "free browser games",
   "play snake online",
-  "2048 game",
   "memory match game",
-  "minesweeper online",
   "tic tac toe online",
   "multi-game app",
   "free online games",

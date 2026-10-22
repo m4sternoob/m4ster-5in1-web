@@ -20,7 +20,7 @@ const PLATFORMS = [
   },
   {
     name: "macOS",
-    desc: "Native .dmg via Tauri — Apple Silicon and Intel.",
+    desc: "Native .dmg via Tauri — Apple Silicon.",
     href: MAC_DOWNLOAD_URL,
     cta: "Download .dmg",
   },

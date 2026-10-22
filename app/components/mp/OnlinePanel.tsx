@@ -310,7 +310,7 @@ export default function OnlinePanel<S, M>({
         </button>
       </div>
       <p className="mt-3 text-[11px] text-slate-500">
-        Rooms are anonymous and peer-to-peer — the code is the only key. Nothing is uploaded or stored on a server.
+        Rooms are anonymous — the code is the only key. Moves pass through our relay server; nothing is stored.
       </p>
     </div>
   );

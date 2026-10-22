@@ -23,7 +23,7 @@ const GAMES = [
     href: "/play/connect4",
     icon: "🔴",
     title: "Connect 4",
-    blurb: "Line up four vs the CPU.",
+    blurb: "Line up four vs the CPU, or Online 2P with a friend.",
   },
   {
     href: "/play/memory",
@@ -35,7 +35,7 @@ const GAMES = [
     href: "/play/tictactoe",
     icon: "⭕",
     title: "Tic-Tac-Toe",
-    blurb: "Minimax CPU, unbeatable.",
+    blurb: "Minimax CPU, unbeatable — plus Online 2P.",
   },
   {
     href: "/play/guessing",
