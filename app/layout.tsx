@@ -124,6 +124,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        {/* Pre-paint prefs: apply the Customize settings (same localStorage
+            key + body classes CustomizeToolbar maintains) before first
+            paint, so there is never a flash of rainbow separators or
+            animated state. Defaults are light: animations off, theme
+            separators; reduced motion forces animations off. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s={};try{s=JSON.parse(localStorage.getItem("m4ster-customize")||"{}")}catch(e){}var b=document.body,r=document.documentElement;if(typeof s.navLogo==="number")r.style.setProperty("--logo-nav-scale",String(s.navLogo));if(typeof s.heroLogo==="number")r.style.setProperty("--logo-hero-scale",String(s.heroLogo));if(typeof s.glow==="number")r.style.setProperty("--glow",String(s.glow));r.style.setProperty("--rgb-speed",(typeof s.rgbSpeed==="number"?s.rgbSpeed:6)+"s");if(s.bgAnim===false)b.classList.add("no-bg-anim");if(s.rgb===false)b.classList.add("no-rgb");if(s.rgbBreathe===true)b.classList.add("rgb-breathe");if(s.rainbow===true)b.classList.add("sep-rainbow");var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;if(s.animations!==true||reduced)b.classList.add("no-anim");}catch(e){}})();`,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}

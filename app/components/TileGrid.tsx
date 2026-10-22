@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { PREFS_EVENT } from "../lib/prefs";
 
 /* Living game-tile grid: a fixed full-viewport canvas of square tiles, each
    running a tiny live animation drawn from the five M4ster-5IN1 games — a slithering
@@ -343,8 +344,10 @@ export default function TileGrid() {
       }
     };
 
-    if (reduced) {
-      // Static: one frozen frame, no loop, no listeners.
+    /* One frozen frame: base grid + tiles at a fixed phase. This is also
+       the light-mode render — when motion is off the rAF loop never runs
+       (real perf, not a hidden canvas). */
+    const drawStatic = () => {
       drawBaseGrid();
       const t = 1.7;
       for (let cy = 0; cy * CELL < h; cy++) {
@@ -353,9 +356,12 @@ export default function TileGrid() {
           DRAWN[type](ctx, cx * CELL, cy * CELL, CELL, t + rand2(cx, cy, 3) * 6, AMBIENT);
         }
       }
-      return stopResize;
-    }
+    };
 
+    let staticMode = false;
+    let stopLoop: (() => void) | null = null;
+
+    const startLoop = (): (() => void) => {
     const tiles = new Map<string, Tile>();
     const ripples: Ripple[] = [];
     let lastRipple = 0;
@@ -485,8 +491,43 @@ export default function TileGrid() {
 
     return () => {
       cancelAnimationFrame(raf);
-      stopResize();
       if (!touch) window.removeEventListener("pointermove", onMove);
+    };
+    };
+
+    /* Motion gate: reduced motion OR the master Animations switch off
+       (body.no-anim, kept in sync by CustomizeToolbar + the pre-paint
+       script) means a static frame only — the loop never runs. The
+       Customize panel fires PREFS_EVENT on every change, so toggling
+       Animations flips the loop live. */
+    let mode: "unset" | "static" | "live" = "unset";
+    const sync = () => {
+      const off = reduced || document.body.classList.contains("no-anim");
+      if (off && mode !== "static") {
+        mode = "static";
+        if (stopLoop) {
+          stopLoop();
+          stopLoop = null;
+        }
+        ctx.clearRect(0, 0, w, h);
+        drawStatic();
+      } else if (!off && mode !== "live") {
+        mode = "live";
+        stopLoop = startLoop();
+      }
+    };
+    const redrawStaticOnResize = () => {
+      if (mode === "static") drawStatic();
+    };
+    sync();
+    window.addEventListener(PREFS_EVENT, sync);
+    window.addEventListener("resize", redrawStaticOnResize);
+
+    return () => {
+      window.removeEventListener(PREFS_EVENT, sync);
+      window.removeEventListener("resize", redrawStaticOnResize);
+      if (stopLoop) stopLoop();
+      stopResize();
     };
   }, []);
 

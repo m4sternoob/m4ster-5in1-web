@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useGameResult } from "../../lib/gameResult";
 
 /* Memory Match — REAL 3D card flips (rotateY + perspective, the card
    physically turns over). Crisp geometric faces, match celebrations,
@@ -43,6 +44,9 @@ export default function MemoryGame() {
   const missTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const done = matched.size === size.pairs;
+
+  /* Game-reactive accent: clearing the board is a win (green). */
+  useGameResult(done ? "win" : null);
 
   useEffect(() => () => { if (missTimer.current) clearTimeout(missTimer.current); }, []);
 
@@ -156,7 +160,7 @@ export default function MemoryGame() {
 
       <p className="mt-4 min-h-6 text-center text-sm font-semibold text-slate-200">
         {done ? (
-          <span key="done" className="pop-in inline-block text-arcade">Cleared in {moves} moves — nice memory!</span>
+          <span key="done" className="game-result pop-in inline-block text-arcade">Cleared in {moves} moves — nice memory!</span>
         ) : (
           `${size.pairs - matched.size} pairs left.`
         )}

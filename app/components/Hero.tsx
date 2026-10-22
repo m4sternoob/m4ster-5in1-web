@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import AliveLogo from "./AliveLogo";
 import Reveal from "./Reveal";
+import { motionOff, PREFS_EVENT } from "../lib/prefs";
 
 /* Slow cinematic banner reveal: an IntersectionObserver triggers a 1.2s
    scale-up + fade + upward drift when the banner enters the viewport.
@@ -13,11 +14,18 @@ import Reveal from "./Reveal";
 function BannerReveal({ children }: { children: React.ReactNode }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
+  const [instant, setInstant] = useState(false);
   const [parallax, setParallax] = useState(0);
 
   useEffect(() => {
     const el = wrapRef.current;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    /* Reduced motion OR light mode (master Animations off): the banner
+       renders visible immediately — no cinematic drift, no parallax. */
+    if (
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      motionOff()
+    ) {
+      setInstant(true);
       setVisible(true);
       return;
     }
@@ -36,6 +44,10 @@ function BannerReveal({ children }: { children: React.ReactNode }) {
 
     let ticking = false;
     const onScroll = () => {
+      if (motionOff()) {
+        setParallax(0);
+        return;
+      }
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
@@ -46,11 +58,17 @@ function BannerReveal({ children }: { children: React.ReactNode }) {
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
+    /* Toggling Animations off mid-session parks the parallax at once. */
+    const onPrefs = () => {
+      if (motionOff()) setParallax(0);
+    };
+    window.addEventListener(PREFS_EVENT, onPrefs);
     onScroll();
 
     return () => {
       io.disconnect();
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener(PREFS_EVENT, onPrefs);
     };
   }, []);
 
@@ -67,8 +85,9 @@ function BannerReveal({ children }: { children: React.ReactNode }) {
           transform: visible
             ? "scale(1) translateY(0)"
             : "scale(0.92) translateY(48px)",
-          transition:
-            "opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1)",
+          transition: instant
+            ? "none"
+            : "opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1)",
           willChange: "opacity, transform",
         }}
       >

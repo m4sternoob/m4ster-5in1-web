@@ -11,6 +11,7 @@ import {
   useMpRoom,
   type MpEngine,
 } from "../lib/mp/room";
+import { useGameResult, type GameResult } from "../lib/gameResult";
 
 /* Tic-Tac-Toe, three ways:
    Solo — vs the unbeatable minimax CPU (the original demo, unchanged).
@@ -138,6 +139,21 @@ export default function TicTacToeDemo() {
   const winLine = result && result !== "draw" ? winLineOf(shownBoard) : null;
 
   const myMark: "X" | "O" = room.role === "guest" ? "O" : "X";
+
+  /* Game-reactive accent (separators + this status line): solo X is the
+     player, online compares against myMark, local 2P counts any winner
+     as a win for the table. */
+  const gameResult: GameResult | null =
+    result === null
+      ? null
+      : result === "draw"
+        ? "draw"
+        : mode === "local"
+          ? "win"
+          : result === (online ? myMark : "X")
+            ? "win"
+            : "lose";
+  useGameResult(gameResult);
   const myTurn = online && room.phase === "playing" && room.state?.turn === myMark;
   const hostName = room.lobby?.host.name ?? "Host";
   const guestName = room.lobby?.guest?.name ?? "Guest";
@@ -324,7 +340,7 @@ export default function TicTacToeDemo() {
 
       <p className="mt-6 min-h-6 text-sm font-semibold text-slate-200">
         {result ? (
-          <span key={result} className={`pop-in inline-block ${result === "X" ? "text-arcade" : result === "O" ? "text-rose-400" : "text-slate-300"}`}>
+          <span key={result} className={`game-result pop-in inline-block ${result === "X" ? "text-arcade" : result === "O" ? "text-rose-400" : "text-slate-300"}`}>
             {status}
           </span>
         ) : status}
@@ -404,6 +420,9 @@ export default function TicTacToeDemo() {
         @media (prefers-reduced-motion: reduce) {
           .ttt-draw line, .ttt-draw circle, .ttt-winline line, .ttt-cell-win { animation-duration: 0.01ms !important; }
         }
+        /* Light mode: the global no-anim kill would strand the marks at
+           dashoffset 60 / the win line at 5 (invisible) — rest them drawn. */
+        body.no-anim .ttt-draw line, body.no-anim .ttt-draw circle, body.no-anim .ttt-winline line { stroke-dashoffset: 0; }
       `}</style>
     </div>
   );

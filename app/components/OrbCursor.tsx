@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { PREFS_EVENT } from "../lib/prefs";
 
 /* Signature m4ster orb cursor — follows the mouse everywhere, native
    cursor hidden. Red-hot special effect (expand + red glowing core +
@@ -20,8 +21,6 @@ export default function OrbCursor() {
     // Skip on touch devices and when the user prefers reduced motion
     if (window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    document.body.classList.add("orb-active");
 
     const onMove = (e: MouseEvent) => {
       target.current.x = e.clientX;
@@ -43,13 +42,34 @@ export default function OrbCursor() {
       raf.current = requestAnimationFrame(tick);
     };
 
-    window.addEventListener("mousemove", onMove, { passive: true });
-    raf.current = requestAnimationFrame(tick);
-
-    return () => {
+    /* Light mode (master Animations off -> body.no-anim) parks the orb:
+       no rAF loop, and the native cursor comes back because orb-active
+       is only present while running. PREFS_EVENT flips it live. */
+    let running = false;
+    const start = () => {
+      if (running) return;
+      running = true;
+      document.body.classList.add("orb-active");
+      window.addEventListener("mousemove", onMove, { passive: true });
+      raf.current = requestAnimationFrame(tick);
+    };
+    const stop = () => {
+      if (!running) return;
+      running = false;
       window.removeEventListener("mousemove", onMove);
       cancelAnimationFrame(raf.current);
       document.body.classList.remove("orb-active");
+    };
+    const sync = () => {
+      if (document.body.classList.contains("no-anim")) stop();
+      else start();
+    };
+    sync();
+    window.addEventListener(PREFS_EVENT, sync);
+
+    return () => {
+      window.removeEventListener(PREFS_EVENT, sync);
+      stop();
     };
   }, []);
 

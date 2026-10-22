@@ -674,17 +674,52 @@ body {
    ================================================================== */
 
 /* ------------------------------------------------------------------
-   1. RGB SEPARATORS — animated flowing gradient lines.
-   Spec: .rgb-sep class, body.no-rgb hides all, body.rgb-breathe switches
-   to breathing mode, --rgb-speed controls duration (default 6s).
+   1. SEPARATORS — theme-colored by default (2026-10-22, his order:
+   the bar takes the site's own theme, never forced rainbow).
+   Spec: .rgb-sep class; body.no-rgb hides all; body.sep-rainbow opts
+   into the original rainbow flow (body.rgb-breathe switches it to
+   breathing mode, --rgb-speed controls flow duration, default 6s).
    ------------------------------------------------------------------ */
 :root {
   --rgb-speed: 6s;
+  --sep-theme: linear-gradient(
+    90deg,
+    rgb(34 211 238 / 0) 0%,
+    rgb(34 211 238 / 0.38) 22%,
+    rgb(129 140 248 / 0.5) 50%,
+    rgb(34 211 238 / 0.38) 78%,
+    rgb(34 211 238 / 0) 100%
+  );
+  --sep-win: linear-gradient(
+    90deg,
+    rgb(34 197 94 / 0) 0%,
+    rgb(34 197 94 / 0.55) 22%,
+    rgb(74 222 128 / 0.8) 50%,
+    rgb(34 197 94 / 0.55) 78%,
+    rgb(34 197 94 / 0) 100%
+  );
+  --sep-lose: linear-gradient(
+    90deg,
+    rgb(244 63 94 / 0) 0%,
+    rgb(244 63 94 / 0.55) 22%,
+    rgb(251 113 133 / 0.8) 50%,
+    rgb(244 63 94 / 0.55) 78%,
+    rgb(244 63 94 / 0) 100%
+  );
 }
 
 .rgb-sep {
   height: 2px;
   border: none;
+  background: var(--sep-theme);
+  border-radius: 2px;
+  opacity: 0.9;
+}
+
+/* Rainbow separators — opt-in via Customize. Restores the original
+   flowing gradient; flow/breathing are motion, so the master
+   Animations switch (body.no-anim) still freezes them. */
+body.sep-rainbow .rgb-sep {
   background: linear-gradient(
     90deg,
     #ff2d78,
@@ -702,7 +737,6 @@ body {
   animation-duration: var(--rgb-speed, 6s);
   animation-timing-function: linear;
   animation-iteration-count: infinite;
-  border-radius: 2px;
   opacity: 0.85;
 }
 
@@ -721,8 +755,8 @@ body.no-bg-anim .aura-layer {
   }
 }
 
-/* Breathing mode: opacity pulse instead of flow */
-body.rgb-breathe .rgb-sep {
+/* Breathing mode: opacity pulse instead of flow (rainbow only) */
+body.sep-rainbow.rgb-breathe .rgb-sep {
   animation: rgb-breathe 4s ease-in-out infinite;
   background-size: 100% 100%;
 }
@@ -740,6 +774,112 @@ body.rgb-breathe .rgb-sep {
 /* Hide all RGB separators */
 body.no-rgb .rgb-sep {
   display: none;
+}
+
+/* ------------------------------------------------------------------
+   1b. GAME-REACTIVE COLOR — when a game ends, games set data-result
+   on <html> (app/lib/gameResult.ts): separators and the result
+   banner accent go GREEN on a win, RED on a loss, neutral theme on a
+   draw; restart clears it. Beats the rainbow look too — the outcome
+   color is the point. In light mode the change is static; with
+   animations on, exactly one subtle pulse. No strobing.
+   ------------------------------------------------------------------ */
+html[data-result="win"] body .rgb-sep {
+  background: var(--sep-win);
+}
+
+html[data-result="lose"] body .rgb-sep {
+  background: var(--sep-lose);
+}
+
+html[data-result="draw"] body .rgb-sep,
+html[data-result="draw"] body.sep-rainbow.rgb-breathe .rgb-sep {
+  background: var(--sep-theme);
+  background-size: 100% 100%;
+  animation: none;
+}
+
+html[data-result="win"] body:not(.no-anim) .rgb-sep,
+html[data-result="lose"] body:not(.no-anim) .rgb-sep {
+  animation: result-pulse 0.9s ease-out 1;
+}
+
+html[data-result="win"] body.sep-rainbow:not(.no-anim) .rgb-sep,
+html[data-result="lose"] body.sep-rainbow:not(.no-anim) .rgb-sep {
+  animation:
+    result-pulse 0.9s ease-out 1,
+    rgb-flow var(--rgb-speed, 6s) linear infinite;
+  background-size:
+    100% 100%,
+    200% 100%;
+}
+
+@keyframes result-pulse {
+  0% {
+    filter: brightness(2);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+/* The result/win banner accent in each game carries .game-result. */
+html[data-result="win"] .game-result {
+  color: #4ade80;
+  text-shadow:
+    0 0 18px rgb(34 197 94 / 0.55),
+    0 0 46px rgb(34 197 94 / 0.3);
+}
+
+html[data-result="lose"] .game-result {
+  color: #fb7185;
+  text-shadow:
+    0 0 18px rgb(244 63 94 / 0.55),
+    0 0 46px rgb(244 63 94 / 0.3);
+}
+
+html[data-result="draw"] .game-result {
+  color: #cbd5e1;
+  text-shadow:
+    0 0 18px rgb(129 140 248 / 0.45),
+    0 0 46px rgb(129 140 248 / 0.25);
+}
+
+/* ------------------------------------------------------------------
+   1c. LIGHT MODE (master Animations OFF — the default). Static
+   styling only: no aura drift, no entrance pops, no shimmer/glow
+   motion, no separator flow. The JS/canvas loops (TileGrid,
+   OrbCursor) read the same body.no-anim class and never start.
+   prefers-reduced-motion forces this state too (CustomizeToolbar +
+   the pre-paint script both add the class when the OS asks).
+   ------------------------------------------------------------------ */
+body.no-anim *,
+body.no-anim *::before,
+body.no-anim *::after {
+  animation: none !important;
+}
+
+/* Entrances land in their final state instead of popping in. */
+body.no-anim .pop-in {
+  opacity: 1 !important;
+}
+
+body.no-anim .scroll-reveal,
+body.no-anim .scroll-stagger > * {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+  transition: none !important;
+}
+
+body.no-anim .orb-cursor {
+  display: none !important;
+}
+
+/* Stroke-drawn marks rest fully drawn: their dashoffset only reaches 0
+   by running the draw animation, which light mode forbids. */
+body.no-anim .c4-win-line {
+  stroke-dashoffset: 0;
 }
 
 /* ------------------------------------------------------------------

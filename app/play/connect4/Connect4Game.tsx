@@ -21,6 +21,8 @@ import {
   useMpRoom,
   type MpEngine,
 } from "../../lib/mp/room";
+import { useGameResult, type GameResult } from "../../lib/gameResult";
+import { motionOff } from "../../lib/prefs";
 
 /* Playable Connect 4, three ways:
    Solo — you (red) vs the CPU (yellow); Hard takes wins and blocks,
@@ -155,6 +157,20 @@ export default function Connect4Game() {
   const winSet = useMemo(() => new Set(line ?? []), [line]);
 
   const myMark: Mark = room.role === "guest" ? CPU : PLAYER;
+
+  /* Game-reactive accent (separators + this banner): solo PLAYER is you,
+     online compares against myMark, local 2P counts any winner as a win
+     for the table; a full board with no winner is a draw. */
+  const gameResult: GameResult | null = !done
+    ? null
+    : winner === null
+      ? "draw"
+      : mode === "local"
+        ? "win"
+        : winner === (online ? myMark : PLAYER)
+          ? "win"
+          : "lose";
+  useGameResult(gameResult);
   const myTurn = online && room.phase === "playing" && room.state?.turn === myMark;
   const hostName = room.lobby?.host.name ?? "Host";
   const guestName = room.lobby?.guest?.name ?? "Guest";
@@ -231,6 +247,9 @@ export default function Connect4Game() {
   // the winning line, screen flash, then follow-up waves.
   useEffect(() => {
     if (!winner || !line) return;
+    /* Light mode (or reduced motion): no confetti loops at all — the
+       banner and the game-reactive color carry the moment statically. */
+    if (motionOff()) return;
     const canvas = fxRef.current;
     const wrap = boardWrapRef.current;
     if (!canvas || !wrap) return;
@@ -458,7 +477,7 @@ export default function Connect4Game() {
       {/* Win banner — big, springy, glowing */}
       {winner && (
         <div key={`banner-${gameId}`} className="c4-banner mt-5 text-center" aria-live="polite">
-          <div className={`c4-banner-text ${winner === PLAYER ? "c4-banner-you" : "c4-banner-cpu"}`}>
+          <div className={`game-result c4-banner-text ${winner === PLAYER ? "c4-banner-you" : "c4-banner-cpu"}`}>
             {winnerLabel}
           </div>
           <div className="mt-1 text-sm font-medium text-slate-400">
@@ -472,7 +491,7 @@ export default function Connect4Game() {
       {/* Draw treatment */}
       {done && !winner && (
         <div key={`draw-${gameId}`} className="c4-banner mt-5 text-center" aria-live="polite">
-          <div className="c4-banner-text c4-banner-draw">DRAW</div>
+          <div className="game-result c4-banner-text c4-banner-draw">DRAW</div>
           <div className="mt-1 text-sm font-medium text-slate-400">Board full — nobody blinked.</div>
         </div>
       )}

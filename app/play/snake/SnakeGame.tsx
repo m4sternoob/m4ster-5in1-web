@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useGameResult, type GameResult } from "../../lib/gameResult";
 
 /* Canvas Snake — 60fps minimum, 120fps capable.
    Fixed-timestep logic + interpolated rendering for buttery movement.
@@ -99,6 +100,19 @@ export default function SnakeGame() {
   });
 
   const touchRef = useRef<{ x: number; y: number } | null>(null);
+  /* The standing best when the current run started — a game over only
+     counts as a "win" (green) if the run beat it. Captured in start()
+     from storage so the mid-run best update on death can't flip it. */
+  const runBestRef = useRef(0);
+
+  /* Game-reactive accent: game over is a loss (red); a new high score
+     is a win (green). Cleared automatically while alive / on restart. */
+  const gameResult: GameResult | null = alive
+    ? null
+    : score > runBestRef.current && score > 0
+      ? "win"
+      : "lose";
+  useGameResult(gameResult);
 
   useEffect(() => {
     const saved = Number(localStorage.getItem(BEST_KEY) ?? 0);
@@ -113,6 +127,11 @@ export default function SnakeGame() {
   }, []);
 
   const start = useCallback(() => {
+    try {
+      runBestRef.current = Number(localStorage.getItem(BEST_KEY) ?? 0) || 0;
+    } catch {
+      runBestRef.current = 0;
+    }
     const fresh = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
     const g = G.current;
     g.snake = fresh.map((p) => ({ ...p }));
@@ -552,7 +571,7 @@ export default function SnakeGame() {
 
       {!alive ? (
         <div className="pop-in mb-4 text-center" style={{ ["--pop-delay" as string]: "100ms" }}>
-          <p className="gameover-title text-2xl font-extrabold text-white">GAME OVER</p>
+          <p className="game-result gameover-title text-2xl font-extrabold text-white">GAME OVER</p>
           <p className="mt-1 text-sm text-slate-400">
             Scored {score} · best streak {streak}x · press{" "}
             <kbd className="rounded border border-edge bg-panel px-1.5 py-0.5 font-mono text-xs text-slate-200">SPACE</kbd>{" "}

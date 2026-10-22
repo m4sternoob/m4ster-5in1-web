@@ -1,18 +1,23 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { PREFS_EVENT, PREFS_KEY } from "../lib/prefs";
 
 /* Floating Customize toolbar — logo sizes, glow intensity, background
-   animation, and RGB separator controls. Settings persist to localStorage
-   and are applied as CSS vars / body classes on :root. */
+   animation, a master Animations switch, and separator controls.
+   Settings persist to localStorage and are applied as CSS vars / body
+   classes on :root. Defaults are LIGHT (2026-10-22): animations off and
+   theme-colored separators; rainbow flow and motion are opt-in. */
 
-const KEY = "m4ster-customize";
+const KEY = PREFS_KEY;
 
 type Settings = {
   navLogo: number;
   heroLogo: number;
   glow: number;
   bgAnim: boolean;
+  animations: boolean;
+  rainbow: boolean;
   rgb: boolean;
   rgbSpeed: number;
   rgbBreathe: boolean;
@@ -23,6 +28,8 @@ const DEFAULTS: Settings = {
   heroLogo: 1,
   glow: 1,
   bgAnim: true,
+  animations: false,
+  rainbow: false,
   rgb: true,
   rgbSpeed: 6,
   rgbBreathe: false,
@@ -34,9 +41,15 @@ function apply(s: Settings) {
   r.style.setProperty("--logo-hero-scale", String(s.heroLogo));
   r.style.setProperty("--glow", String(s.glow));
   r.style.setProperty("--rgb-speed", `${s.rgbSpeed}s`);
+  /* Reduced motion always wins over the Animations toggle. */
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.body.classList.toggle("no-anim", !s.animations || reduced);
+  document.body.classList.toggle("sep-rainbow", s.rainbow);
   document.body.classList.toggle("no-bg-anim", !s.bgAnim);
   document.body.classList.toggle("no-rgb", !s.rgb);
   document.body.classList.toggle("rgb-breathe", s.rgbBreathe);
+  /* Let loop-driven components (TileGrid, OrbCursor) start/stop live. */
+  window.dispatchEvent(new Event(PREFS_EVENT));
 }
 
 function Row({
@@ -206,6 +219,18 @@ export default function CustomizeToolbar() {
             </div>
           </div>
 
+          <div className="space-y-1 border-b border-edge pb-3">
+            <Toggle
+              label="Animations"
+              checked={s.animations}
+              onChange={(v) => update({ animations: v })}
+            />
+            <p className="text-[11px] leading-snug text-slate-500">
+              Off by default — the site stays light. On brings back the
+              living background, entrances, and glow motion.
+            </p>
+          </div>
+
           <Row
             label="Navbar logo size"
             value="navLogo"
@@ -265,34 +290,43 @@ export default function CustomizeToolbar() {
 
           <div className="space-y-3 border-t border-edge pt-3">
             <span className="text-xs font-semibold text-slate-400">
-              RGB separators
+              Separators
             </span>
             <Toggle
-              label="RGB lines"
+              label="Separator lines"
               checked={s.rgb}
               onChange={(v) => update({ rgb: v })}
             />
             <Toggle
-              label="Breathing mode"
-              checked={s.rgbBreathe}
-              onChange={(v) => update({ rgbBreathe: v })}
+              label="Rainbow separators"
+              checked={s.rainbow}
+              onChange={(v) => update({ rainbow: v })}
             />
-            <Row
-              label="Flow speed"
-              value="rgbSpeed"
-              display={`${s.rgbSpeed}s`}
-            >
-              <input
-                type="range"
-                min={2}
-                max={20}
-                step={1}
-                value={s.rgbSpeed}
-                onChange={(e) => update({ rgbSpeed: Number(e.target.value) })}
-                className="slider-touch w-full"
-                aria-label="RGB flow speed"
-              />
-            </Row>
+            {s.rainbow && (
+              <div className="space-y-3 border-l border-edge pl-3">
+                <Toggle
+                  label="Breathing mode"
+                  checked={s.rgbBreathe}
+                  onChange={(v) => update({ rgbBreathe: v })}
+                />
+                <Row
+                  label="Flow speed"
+                  value="rgbSpeed"
+                  display={`${s.rgbSpeed}s`}
+                >
+                  <input
+                    type="range"
+                    min={2}
+                    max={20}
+                    step={1}
+                    value={s.rgbSpeed}
+                    onChange={(e) => update({ rgbSpeed: Number(e.target.value) })}
+                    className="slider-touch w-full"
+                    aria-label="RGB flow speed"
+                  />
+                </Row>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
+import { useGameResult } from "../lib/gameResult";
 import Link from "next/link";
 import FullscreenButton from "./FullscreenButton";
 import VolumeControl from "./VolumeControl";
@@ -76,6 +77,9 @@ function loadBests(): Record<Difficulty, number | null> {
 
 export default function GuessingDemo() {
   const [phase, setPhase] = useState<Phase>("setup");
+
+  /* Game-reactive accent: guessed it = green, out of attempts = red. */
+  useGameResult(phase === "won" ? "win" : phase === "lost" ? "lose" : null);
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const [minText, setMinText] = useState("1");
   const [maxText, setMaxText] = useState("100");
@@ -324,7 +328,7 @@ export default function GuessingDemo() {
 
           {phase === "won" ? (
             <div key="wincelebrate" className="pop-in mt-4">
-              <p className="gameover-title text-2xl font-extrabold text-arcade">CORRECT!</p>
+              <p className="game-result gameover-title text-2xl font-extrabold text-arcade">CORRECT!</p>
               <p className="mt-1 text-sm font-semibold text-slate-200">{message}</p>
               {isNewBest && <p className="pop-in mt-1 text-sm font-bold text-yellow-300" style={{ "--pop-delay": "300ms" } as CSSProperties}>New best score!</p>}
               <div className="guess-confetti" aria-hidden="true">
@@ -333,7 +337,7 @@ export default function GuessingDemo() {
             </div>
           ) : phase === "lost" ? (
             <div key="lostcelebrate" className="pop-in mt-4">
-              <p className="gameover-title text-2xl font-extrabold text-rose-400">OUT OF ATTEMPTS</p>
+              <p className="game-result gameover-title text-2xl font-extrabold text-rose-400">OUT OF ATTEMPTS</p>
               <p className="mt-1 text-sm font-semibold text-slate-200">{message}</p>
             </div>
           ) : (

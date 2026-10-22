@@ -1,8 +1,11 @@
 "use client";
 
-/* Animated RGB flowing-gradient separator — the m4ster standard.
-   Respects body.no-rgb (hidden), body.rgb-breathe (pulse mode),
-   and --rgb-speed (flow duration). */
+/* Separator bar in the site's theme accent — the m4ster standard.
+   Theme-colored and static by default; the rainbow flow is opt-in via
+   Customize ("Rainbow separators" -> body.sep-rainbow, with
+   body.rgb-breathe pulse mode and --rgb-speed flow duration).
+   Respects body.no-rgb (hidden) and html[data-result] (game outcome
+   color: green win / red loss / theme draw). */
 
 export default function RgbSeparator({
   className = "",
